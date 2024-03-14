@@ -19,7 +19,7 @@ export class Field extends Image {
         this.inner = scene.add.image(x, y, 'focus')
         this.inner.scale = 0.7
         this.inner.alpha = 0
-        this.inner.depth = 100
+        this.inner.depth = 1
 
         this.scale = 0
         this.index = index

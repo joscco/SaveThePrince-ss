@@ -5,11 +5,11 @@ import {Vector2Dict} from "../general/Dict";
 
 export class FieldManager {
 
-    private static FIELD_WIDTH: number = 153
-    private static FIELD_HEIGHT: number = 153
+    private static FIELD_WIDTH: number = 142
+    private static FIELD_HEIGHT: number = 137
 
-    private scene: MainGameScene
-    private fields: Vector2Dict<Field>
+    private readonly scene: MainGameScene
+    private readonly fields: Vector2Dict<Field>
     private fieldAreaWidth: number;
     private fieldAreaHeight: number;
     private offsetFirstX: number;

@@ -1,10 +1,10 @@
-import Pointer = Phaser.Input.Pointer;
 import {MainGameScene} from "../Game";
 import {GridEntity} from "./GridEntity";
 import {Vector2Dict} from "../general/Dict";
-import {Vector2, vector2Add, vector2Equals, vector2Sub, vector2Unify} from "../general/MathUtils";
+import {Vector2, vector2Add, vector2Sub, vector2Unify} from "../general/MathUtils";
 import {FieldManager} from "./FieldManager";
-import {EntityData} from "./EntityData";
+import {EntityName} from "./EntityData";
+import {EntityFactory} from "./EntityFactory";
 
 export const DIRECTIONS = [
     {x: -1, y: 0},
@@ -19,12 +19,10 @@ export class Grid {
 
     mainScene: MainGameScene
     entities: Vector2Dict<GridEntity> = new Vector2Dict()
-    fieldManager: FieldManager
-
     columns: number
     rows: number
-
-    possibleNextIndices: [Vector2, boolean][];
+    private fieldManager: FieldManager
+    private entityFactory: EntityFactory;
 
     constructor(mainScene: MainGameScene, x: number, y: number, columns: number, rows: number) {
         this.columns = columns
@@ -32,17 +30,19 @@ export class Grid {
 
         this.mainScene = mainScene
         this.fieldManager = new FieldManager(mainScene, x, y, columns, rows)
+        this.entityFactory = new EntityFactory()
     }
 
-    initEntityAt(index: Vector2, entityData: EntityData) {
+    initEntityAt(index: Vector2, entityName: EntityName, movable: boolean): GridEntity {
         let newPosition = this.fieldManager.getPositionForIndex(index)
-        let entity = new GridEntity(this.mainScene, newPosition.x, newPosition.y, entityData)
+        let entity = this.entityFactory.create(this.mainScene, newPosition.x, newPosition.y, entityName)
         entity.setIndex(index)
+        entity.setMovable(movable)
         this.entities.set(index, entity)
-        entity.blendIn()
+        return entity
     }
 
-    async moveEntityTo(index: Vector2, entity: GridEntity) {
+    async moveEntityTo(entity: GridEntity, index: Vector2) {
         let isFieldFree = this.isFreeField(index)
 
         if (isFieldFree) {
@@ -54,7 +54,7 @@ export class Grid {
         }
     }
 
-    private isFreeField(index: Vector2): boolean {
+    public isFreeField(index: Vector2): boolean {
         return !this.entities.has(index)
     }
 
@@ -62,7 +62,7 @@ export class Grid {
         await this.fieldManager.blendInFields()
     }
 
-    private findNextPossibleIndices(nextIndex: Vector2): [Vector2, boolean][] {
+    public findNextPossibleIndices(nextIndex: Vector2): [Vector2, boolean][] {
         let result = []
         for (let direction of DIRECTIONS) {
             let currentIndex: Vector2 = vector2Add(direction, nextIndex)
@@ -81,5 +81,32 @@ export class Grid {
     private async letInteract(firstEntity: GridEntity, secondEntity: GridEntity) {
         firstEntity.shake()
         await secondEntity.shake()
+    }
+
+    async moveEntityAndInteractWithField(mainEntity: GridEntity, pointerIndex: Vector2) {
+        let direction = vector2Unify(vector2Sub(pointerIndex, mainEntity.index))
+        let lastIndexBeforePointer = vector2Sub(pointerIndex, direction)
+        await this.moveEntityTo(mainEntity, lastIndexBeforePointer)
+        let otherEntity = this.entities.get(pointerIndex)
+        await this.letInteract(mainEntity, otherEntity)
+        if (this.isFreeField(pointerIndex)) {
+            await this.moveEntityTo(mainEntity, pointerIndex)
+        }
+    }
+
+    getEntityAt(pointerIndex: Vector2) {
+        return this.entities.get(pointerIndex);
+    }
+
+    getClosestFieldIndexTo(pointer: Vector2): Vector2 {
+        return this.fieldManager.getClosestFieldIndexTo(pointer)
+    }
+
+    async blendInPossibleFieldHints(possibleNextPositions: [Vector2, boolean][]) {
+        await this.fieldManager.blendInPossibleFieldHints(possibleNextPositions)
+    }
+
+    async blendOutPossibleFieldHints(nextIndices: Vector2[]) {
+        await this.fieldManager.blendOutPossibleFieldHints(nextIndices)
     }
 }

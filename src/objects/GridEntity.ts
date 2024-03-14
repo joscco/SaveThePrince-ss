@@ -1,48 +1,63 @@
-import {EntityData} from "./EntityData";
+import {EntityName} from "./EntityData";
 import {MainGameScene} from "../Game";
-import Image = Phaser.GameObjects.Image;
+import {Vector2, vector2Dist, vector2Sub} from "../general/MathUtils";
 import Container = Phaser.GameObjects.Container;
 import Vector2Like = Phaser.Types.Math.Vector2Like;
-import {Vector2} from "../general/MathUtils";
 
-export class GridEntity extends Container {
+export abstract class GridEntity extends Container {
 
     index: Vector2
-    icon: Image
-    entityData: EntityData
+    container: Container
+    movable: boolean = true
 
-    constructor(scene: MainGameScene, x: number, y: number, entityData: EntityData) {
+    constructor(scene: MainGameScene, x: number, y: number) {
         super(scene, x, y)
         scene.add.existing(this)
 
-        this.entityData = entityData
-        this.icon = scene.add.image(0, 0, entityData.textureName)
+        this.container = this.createImageContainer()
 
-        this.add([this.icon])
+        this.add([this.container])
 
         this.scale = 0
-        this.depth = 0
+        this.depth = 10
     }
 
+    abstract createImageContainer(): Container
+
+    abstract getName(): EntityName
+
     async tweenMoveTo(pos: Vector2Like) {
+        var direction = vector2Sub({x: pos.x, y: pos.y}, {x: this.x, y: this.y})
+        var distance = vector2Dist(direction)
+        if (direction.x > 0) {
+            this.flip(false)
+        } else if (direction.x < 0) {
+            this.flip(true)
+        }
         return new Promise<void>((resolve) => this.scene.tweens.add({
             targets: this,
             x: pos.x,
             y: pos.y,
-            duration: 300,
-            ease: Phaser.Math.Easing.Quadratic.Out,
+            duration: distance * 1.5,
+            ease: Phaser.Math.Easing.Sine.InOut,
             onComplete: () => resolve()
         }))
     }
 
+    flip(lookingLeft: boolean) {
+        this.container.setScale(lookingLeft ? -1 : 1, 1)
+    }
+
     setIndex(index: Vector2) {
+        this.depth = index.y
         this.index = index
     }
 
-    blendIn() {
+    blendIn(delay: number = 0) {
         this.scene.tweens.add({
             targets: this,
             scale: 1,
+            delay: delay,
             duration: 200,
             ease: Phaser.Math.Easing.Back.Out
         })
@@ -60,36 +75,36 @@ export class GridEntity extends Container {
         })
     }
 
-    getName() {
-        return this.entityData.name
-    }
-
     async shake(): Promise<void> {
         return new Promise<void>(resolve => this.scene.tweens.chain({
-            targets: this.icon,
+            targets: this.container,
             onComplete: () => resolve(),
             tweens: [
                 {
-                    x: -10,
-                    duration: 50,
+                    x: -5,
+                    duration: 40,
                     ease: Phaser.Math.Easing.Quadratic.InOut
                 },
                 {
-                    x: 10,
-                    duration: 50,
+                    x: 5,
+                    duration: 40,
                     ease: Phaser.Math.Easing.Quadratic.InOut
                 },
                 {
-                    x: -10,
-                    duration: 50,
+                    x: -5,
+                    duration: 40,
                     ease: Phaser.Math.Easing.Quadratic.InOut
                 },
                 {
                     x: 0,
-                    duration: 50,
+                    duration: 40,
                     ease: Phaser.Math.Easing.Quadratic.InOut
                 }
             ],
         }))
+    }
+
+    setMovable(movable: boolean) {
+        this.movable = movable
     }
 }
