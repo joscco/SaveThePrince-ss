@@ -1,108 +1,112 @@
 import * as Phaser from 'phaser';
-import {Town} from "./Town";
-import {Person} from "./Person";
+import {Grid} from "./objects/Grid";
+import {EntityWiki} from "./objects/EntityWiki";
+import {CUT_RICE_MAKI} from "./objects/EntityData";
 import GameConfig = Phaser.Types.Core.GameConfig;
-import {BUILDINGS} from "./Building";
-import {Tent} from "./objects/collectibles/Tent";
+import Center = Phaser.Scale.Center;
+import {vector2Equals, vector2Sub, vector2Unify} from "./general/MathUtils";
+import Pointer = Phaser.Input.Pointer;
+import {GridEntity} from "./objects/GridEntity";
+
+export const GAME_HEIGHT = 1080;
+export const GAME_WIDTH = 1080;
 
 export class MainGameScene extends Phaser.Scene {
+    grid: Grid
+    entityWiki: EntityWiki
 
-    people: Person[] = []
+    entityWaitingForInput: GridEntity
+    moving: boolean
+    waitingForAim: boolean
 
     constructor() {
         super('main');
     }
 
     preload() {
-        this.load.image('field', 'assets/field.png');
-        this.load.image('person', 'assets/person.png');
+        // general
+        this.load.image('field', 'assets/images/available_field.png');
+        this.load.image('focus', 'assets/images/focus.png');
+        this.load.image('focusFree', 'assets/images/focusFree.png');
 
-        // plants
-        this.load.image('plus', 'assets/plusSign.png');
-        this.load.image('buildings/tent', 'assets/tent.png');
-        this.load.image('buildings/pine', 'assets/pine.png');
-        this.load.image('buildings/house_1', 'assets/house_1.png');
-        this.load.image('buildings/house_2', 'assets/house_2.png');
-        this.load.image('buildings/house_3', 'assets/house_3.png');
-        // UI
-        this.load.image('inventory/slot', 'assets/inventory_slot.png');
-
+        // sushi
+        this.load.image('sushi/cutRiceMaki', 'assets/images/entities/sushi/cutRiceMaki.png');
     }
 
     create() {
-        let town = new Town(this)
+        this.grid = new Grid(this, GAME_WIDTH / 2, GAME_HEIGHT / 2, 5, 5)
+        this.entityWiki = new EntityWiki(this)
+        this.setupFirstLevel()
 
-        for (let x = -6; x <= 6; x++) {
-            for (let y = -4; y <= 4; y++) {
-                let field = this.add.image(GAME_WIDTH / 2 + 100 * x, GAME_HEIGHT / 2 + 75 * y, 'field')
-                field.alpha = 0
-                this.tweens.add({
-                    targets: field,
-                    alpha: 1,
-                    delay: (Math.abs(x) + Math.abs(y)) * 200,
-                    duration: 300,
-                    ease: Phaser.Math.Easing.Quadratic.InOut
-                })
+        this.input.on('pointerup', async (pointer: Pointer) => {
+            if (!this.moving) {
+                let pointerIndex = this.fieldManager.getClosestFieldIndexTo(pointer)
+                if (this.waitingForAim) {
+                    await this.fieldManager.blendOutPossibleFieldHints(this.possibleNextIndices.map(([index, _]) => index))
+                    if (pointerIndex) {
+                        this.waitingForAim = false
+                        if (this.possibleNextIndices.some(([index, _]) => vector2Equals(index, pointerIndex))) {
+                            // If field is free, just move
+                            if (this.isFreeField(pointerIndex)) {
+                                this.moving = true
+                                await this.moveEntityTo(pointerIndex, this.entityWaitingForInput)
+                                this.moving = false
+                            } else {
+                                // If field is taken, interact
+                                let mainEntity = this.entityWaitingForInput
+                                let direction = vector2Unify(vector2Sub(pointerIndex, mainEntity.index))
+                                let lastIndexBeforePointer = vector2Sub(pointerIndex, direction)
+                                this.moving = true
+                                await this.moveEntityTo(lastIndexBeforePointer, this.entityWaitingForInput)
+                                let otherEntity = this.entities.get(pointerIndex)
+                                await this.letInteract(this.entityWaitingForInput, otherEntity)
+                                if (this.isFreeField(pointerIndex)) {
+                                    await this.moveEntityTo(pointerIndex, this.entityWaitingForInput)
+                                }
+                                this.moving = false
+                            }
+                        }
+                    }
+                } else {
+                    if (pointerIndex && !this.isFreeField(pointerIndex)) {
+                        // Mark entity and show possible next fields
+                        let possibleNextPositions = this.findNextPossibleIndices(pointerIndex)
+                        await this.fieldManager.blendInPossibleFieldHints(possibleNextPositions)
+                        this.waitingForAim = true
+                        this.possibleNextIndices = possibleNextPositions
+                        this.entityWaitingForInput = this.entities.get(pointerIndex)
+                    }
+                }
             }
-        }
-
-        // Add tent
-        let tent = new Tent(this, GAME_WIDTH/2, GAME_HEIGHT/2)
-        tent.scale = 0
-        tent.depth = GAME_HEIGHT / 2 + 30
-        this.tweens.add({
-            targets: tent,
-            scale: 1,
-            delay: 1200,
-            duration: 300,
-            ease: Phaser.Math.Easing.Back.Out
-        })
-
-
-        // Add person
-        let person = new Person(this, GAME_WIDTH / 2, GAME_HEIGHT / 2)
-        person.scale = 0
-
-        this.people.push(person)
-        town.addEntity(person)
-        this.tweens.add({
-            targets: person,
-            scale: 1,
-            delay: 1500,
-            duration: 300,
-            ease: Phaser.Math.Easing.Back.Out
-        })
-
-        let random = new Phaser.Math.RandomDataGenerator()
-
-        let plusButton = this.add.image(50, GAME_HEIGHT / 2, 'plus')
-        plusButton.setInteractive()
-        plusButton.on("pointerup", () => {
-
-            let randomBuilding = random.pick(BUILDINGS)
-            town.addResource(randomBuilding)
         })
     }
 
-    update(time: number, delta: number) {
-        for (let person of this.people) {
-            person.update()
-        }
+    private async setupFirstLevel() {
+        await this.grid.blendInFields()
+        this.grid.initEntityAt({x: 0, y: 0}, CUT_RICE_MAKI)
+        this.grid.initEntityAt({x: 3, y: 3}, CUT_RICE_MAKI)
     }
 }
 
-export const GAME_WIDTH = 1920;
-export const GAME_HEIGHT = 1080;
-
 const config: GameConfig = {
     type: Phaser.AUTO,
-    mode: Phaser.Scale.NONE,
-    backgroundColor: '#FFFFFF',
-    width: GAME_WIDTH,
-    height: GAME_HEIGHT,
+    transparent: true,
     parent: 'game',
-    zoom: 1 / 2,
-    scene: MainGameScene
+    scale: {
+        mode: Phaser.Scale.FIT,
+        width: GAME_WIDTH,
+        height: GAME_HEIGHT,
+        autoCenter: Center.CENTER_BOTH,
+        min: {
+            width: GAME_WIDTH / 2,
+            height: GAME_HEIGHT / 2
+        },
+        max: {
+            width: GAME_WIDTH,
+            height: GAME_HEIGHT
+        }
+    },
+    scene: MainGameScene,
 };
 
 const game = new Phaser.Game(config);
