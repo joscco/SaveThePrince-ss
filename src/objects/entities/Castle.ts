@@ -1,7 +1,6 @@
 import {GridEntity} from "../GridEntity";
 import {EntityName} from "../EntityData";
 import Image = Phaser.GameObjects.Image;
-import {Knight} from "./Knight";
 
 export class Castle extends GridEntity {
 

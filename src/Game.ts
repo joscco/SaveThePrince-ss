@@ -2,11 +2,10 @@ import * as Phaser from 'phaser';
 import {Grid} from "./objects/Grid";
 import {Vector2, vector2Equals} from "./general/MathUtils";
 import {GridEntity} from "./objects/GridEntity";
+import {WinScreen} from "./objects/WinScreen";
 import GameConfig = Phaser.Types.Core.GameConfig;
 import Center = Phaser.Scale.Center;
 import Pointer = Phaser.Input.Pointer;
-import {WinScreen} from "./objects/WinScreen";
-import {InteractionManager} from "./objects/InteractionManager";
 
 export const GAME_HEIGHT = 1080;
 export const GAME_WIDTH = 1080;
@@ -142,4 +141,4 @@ const config: GameConfig = {
     scene: MainGameScene,
 };
 
-const game = new Phaser.Game(config);
+new Phaser.Game(config);

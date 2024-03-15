@@ -3,7 +3,6 @@ import {MainGameScene} from "../Game";
 import {Vector2, vector2Dist, vector2Sub} from "../general/MathUtils";
 import Container = Phaser.GameObjects.Container;
 import Vector2Like = Phaser.Types.Math.Vector2Like;
-import {EntityContainer} from "./entityContainers/EntityContainer";
 
 export abstract class GridEntity extends Container {
 

@@ -1,6 +1,6 @@
 import {Vector2} from "./MathUtils";
 import {EntityName} from "../objects/EntityData";
-import first = Phaser.Display.Canvas.CanvasPool.first;
+
 
 export class Dict<K, V> {
     private map = new Map<string, [K, V]>()

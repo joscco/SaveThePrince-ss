@@ -16,7 +16,7 @@ export const ACTIONS = new EntityNamePairDict<Action>([
         // Knight and Princess
         ['knight', 'princess'],
         {
-            canInteract: (a, b, mainScene) => true,
+            canInteract: () => true,
             interact: async (a, b, mainScene) => {
                 let [knight, princess] = sortByNames(a, b, 'knight') as [Knight, Princess]
                 mainScene.removeEntityAt(princess.index)
@@ -30,14 +30,14 @@ export const ACTIONS = new EntityNamePairDict<Action>([
         // Knight and Princess
         ['knight', 'castle'],
         {
-            canInteract: (a, b, mainScene) => {
-                let [knight, castle] = sortByNames(a, b, 'knight') as [Knight, Castle]
+            canInteract: (a, b) => {
+                let [knight, _] = sortByNames(a, b, 'knight') as [Knight, Castle]
                 return knight.hasPrincess()
             },
             interact: async (a, b, mainScene) => {
-                let [knight, castle] = sortByNames(a, b, 'knight') as [Knight, Castle]
+                let [knight, _] = sortByNames(a, b, 'knight') as [Knight, Castle]
                 if (knight.hasPrincess()) {
-                    mainScene.resolveLevel()
+                    await mainScene.resolveLevel()
                 }
             }
         }
