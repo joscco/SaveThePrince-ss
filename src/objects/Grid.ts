@@ -61,7 +61,6 @@ export class Grid {
 
     async moveEntityTo(entity: GridEntity, index: Vector2) {
         if (vector2Equals(entity.index, index)) {
-            console.log("Same index!")
             return
         }
 

@@ -5,6 +5,8 @@ import {EntityName} from "./EntityData";
 import {Knight} from "./entities/Knight";
 import {Princess} from "./entities/Princess";
 import {Castle} from "./entities/Castle";
+import {Wolf} from "./entities/Wolf";
+import {SwordStone} from "./entities/SwordStone";
 
 export type Action = {
     interact: (a: GridEntity, b: GridEntity, mainScene?: MainGameScene) => Promise<void>
@@ -27,7 +29,6 @@ export const ACTIONS = new EntityNamePairDict<Action>([
         }
     ],
     [
-        // Knight and Princess
         ['knight', 'castle'],
         {
             canInteract: (a, b) => {
@@ -39,6 +40,38 @@ export const ACTIONS = new EntityNamePairDict<Action>([
                 if (knight.hasPrincess()) {
                     await mainScene.resolveLevel()
                 }
+            }
+        }
+    ],
+    [
+        ['knight', 'wolf'],
+        {
+            canInteract: (a, b) => true,
+            interact: async (a, b, mainScene) => {
+                let [knight, wolf] = sortByNames(a, b, 'knight') as [Knight, Wolf]
+                if (knight.hasSword()) {
+                    await knight.shake()
+                    mainScene.removeEntityAt(wolf.index)
+                    await wolf.blendOutThenDestroy()
+                    return
+                }
+
+                await wolf.shake()
+                await knight.die()
+            }
+        }
+    ],
+    [
+        ['knight', 'swordStone'],
+        {
+            canInteract: (a, b) => {
+                let [knight, swordStone] = sortByNames(a, b, 'knight') as [Knight, SwordStone]
+                return !knight.hasSword() && swordStone.hasSword()
+            },
+            interact: async (a, b, mainScene) => {
+                let [knight, swordStone] = sortByNames(a, b, 'knight') as [Knight, SwordStone]
+                knight.setSword(true)
+                swordStone.setSword(false)
             }
         }
     ],

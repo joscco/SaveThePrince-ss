@@ -14,7 +14,7 @@ export class PrincessContainer extends EntityContainer {
 
         this.princessBody = this.scene.add.image(0, 50, 'entities.princess.body')
         this.princessBody.setOrigin(0.5, 1)
-        this.princessHead = this.scene.add.image(5, -100, 'entities.princess.fearfulHead')
+        this.princessHead = this.scene.add.image(0, -100, 'entities.princess.fearfulHead')
         this.princessLeftArm = this.scene.add.image(-35, 0, 'entities.princess.arm')
         this.princessLeftArm.setOrigin(0.1, 0.5)
         this.princessRightArm = this.scene.add.image(35, 0, 'entities.princess.arm')
@@ -30,7 +30,7 @@ export class PrincessContainer extends EntityContainer {
         this.princessBody.setPosition(0, 50)
 
         this.princessHead.setTexture('entities.princess.fearfulHead')
-        this.princessHead.setPosition(5, -100)
+        this.princessHead.setPosition(-5, -100)
 
         this.princessLeftArm.setTexture( 'entities.princess.arm')
         this.princessLeftArm.setPosition(-35, 0)
@@ -48,7 +48,7 @@ export class PrincessContainer extends EntityContainer {
         this.princessBody.setPosition(0, 50)
 
         this.princessHead.setTexture('entities.princess.happyHead')
-        this.princessHead.setPosition(5, -100)
+        this.princessHead.setPosition(-5, -100)
 
         this.princessLeftArm.setTexture( 'entities.princess.arm')
         this.princessLeftArm.setPosition(-35, 0)

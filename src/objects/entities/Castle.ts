@@ -15,4 +15,7 @@ export class Castle extends GridEntity {
         return "castle";
     }
 
+    flip(lookingLeft: boolean) {
+    }
+
 }

@@ -36,4 +36,14 @@ export abstract class EntityContainer extends Container {
             onComplete: () => resolve()
         }))
     }
+
+    async rotate(degrees: number) {
+        return new Promise<void>((resolve) => this.scene.tweens.add({
+            targets: this,
+            angle: degrees,
+            duration: 400,
+            ease: Phaser.Math.Easing.Sine.Out,
+            onComplete: () => resolve()
+        }))
+    }
 }

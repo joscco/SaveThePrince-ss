@@ -5,6 +5,8 @@ import {Knight} from "./entities/Knight";
 import {GridEntity} from "./GridEntity";
 import {Princess} from "./entities/Princess";
 import {Tree} from "./entities/Tree";
+import {Wolf} from "./entities/Wolf";
+import {SwordStone} from "./entities/SwordStone";
 
 export class EntityFactory {
     public create(scene: MainGameScene, x: number, y: number, entityName: EntityName): GridEntity {
@@ -17,6 +19,10 @@ export class EntityFactory {
                 return new Princess(scene, x, y);
             case "tree":
                 return new Tree(scene, x, y);
+            case "wolf":
+                return new Wolf(scene, x, y);
+            case "swordStone":
+                return new SwordStone(scene, x, y);
         }
         throw new Error("Entity with name " + entityName + " is not known.")
     }

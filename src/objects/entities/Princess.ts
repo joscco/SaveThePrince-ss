@@ -15,4 +15,7 @@ export class Princess extends GridEntity {
     getName(): EntityName {
         return "princess";
     }
+
+    flip(lookingLeft: boolean) {
+    }
 }

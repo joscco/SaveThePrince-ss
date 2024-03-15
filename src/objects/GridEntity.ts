@@ -30,7 +30,7 @@ export abstract class GridEntity extends Container {
 
     async tweenMoveTo(pos: Vector2Like) {
         var direction = vector2Sub({x: pos.x, y: pos.y}, {x: this.x, y: this.y})
-        var distance = vector2Dist(direction)
+
         if (direction.x > 0) {
             this.flip(false)
         } else if (direction.x < 0) {
@@ -40,16 +40,14 @@ export abstract class GridEntity extends Container {
             targets: this,
             x: pos.x,
             y: pos.y,
-            duration: distance * 1.5,
+            duration: 400,
             ease: Phaser.Math.Easing.Sine.Out,
             onComplete: () => resolve(),
             onUpdate: () => {this.depth = this.y}
         }))
     }
 
-    flip(lookingLeft: boolean) {
-        this.container.setScale(lookingLeft ? -1 : 1, 1)
-    }
+    abstract flip(lookingLeft: boolean)
 
     setIndex(index: Vector2) {
         this.index = index

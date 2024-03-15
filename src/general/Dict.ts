@@ -44,7 +44,7 @@ export class Dict<K, V> {
 
     getEntries(lamda?: (k: K, v: V) => boolean): Array<[K, V]> {
         let entries: [K, V][] = []
-        for (let [id, [key, value]] of this.map.entries()) {
+        for (let [_, [key, value]] of this.map.entries()) {
             if (!lamda || lamda(key, value)) {
                 entries.push([key, value])
             }

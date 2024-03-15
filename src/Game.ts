@@ -32,13 +32,23 @@ export class MainGameScene extends Phaser.Scene {
 
         // entities
         this.load.image('entities.castle', 'assets/images/entities/castle.png');
+
         this.load.image('entities.knight.head', 'assets/images/entities/knightHead.png');
+        this.load.image('entities.knight.deadHead', 'assets/images/entities/deadKnightHead.png');
         this.load.image('entities.knight.body', 'assets/images/entities/knightBody.png');
+        this.load.image('entities.knight.arm', 'assets/images/entities/plainArm.png');
+        this.load.image('entities.knight.armWithSword', 'assets/images/entities/armWithSword.png');
 
         this.load.image('entities.princess.fearfulHead', 'assets/images/entities/fearfulPrincessHead.png');
         this.load.image('entities.princess.happyHead', 'assets/images/entities/happyPrincessHead.png');
         this.load.image('entities.princess.body', 'assets/images/entities/princessBody.png');
         this.load.image('entities.princess.arm', 'assets/images/entities/princessArm.png');
+
+        this.load.image('entities.wolf.aggressiveHead', 'assets/images/entities/angryWolfHead.png');
+        this.load.image('entities.wolf.body', 'assets/images/entities/wolfBody.png');
+
+        this.load.image('entities.swordStone.withSword', 'assets/images/entities/stoneWithSword.png');
+        this.load.image('entities.swordStone.withoutSword', 'assets/images/entities/stoneWithoutSword.png');
 
         this.load.image('entities.tree', 'assets/images/entities/tree.png');
     }
@@ -108,6 +118,9 @@ export class MainGameScene extends Phaser.Scene {
         this.grid.initEntityAt({x: 4, y: 4}, "tree", false).blendIn(300)
         this.grid.initEntityAt({x: 5, y: 2}, "tree", false).blendIn(350)
         this.grid.initEntityAt({x: 5, y: 4}, "tree", false).blendIn(400)
+
+        this.grid.initEntityAt({x: 5, y: 5}, "wolf", false).blendIn(400)
+        this.grid.initEntityAt({x: 2, y: 5}, "swordStone", false).blendIn(400)
     }
 
     async resolveLevel() {
