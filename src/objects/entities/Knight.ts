@@ -1,41 +1,38 @@
 import {GridEntity} from "../GridEntity";
 import {EntityName} from "../EntityData";
-import Image = Phaser.GameObjects.Image;
+import {PrincessContainer} from "../entityContainers/PrincessContainer";
+import {KnightContainer} from "../entityContainers/KnightContainer";
+import Container = Phaser.GameObjects.Container;
 
 export class Knight extends GridEntity {
 
-    knightBody: Image
-    knightHead: Image
+    private knightContainer: KnightContainer
+    private princessContainer: PrincessContainer
+    private savedPrincess: boolean = false
 
-    createImageContainer(): Phaser.GameObjects.Container {
-        this.knightBody = this.scene.add.image(0, 50, 'entities.knight.body')
-        this.knightBody.setOrigin(0.5, 1)
-
-        this.knightHead = this.scene.add.image(0, -110, 'entities.knight.head')
-
-        this.scene.tweens.add({
-            targets: this.knightHead,
-            ease: Phaser.Math.Easing.Quadratic.InOut,
-            y: -105,
-            yoyo: true,
-            duration: 800,
-            loop: -1
-        })
-
-        this.scene.tweens.add({
-            targets: this.knightBody,
-            ease: Phaser.Math.Easing.Quadratic.InOut,
-            scaleX: 1.07,
-            scaleY: 0.95,
-            yoyo: true,
-            duration: 800,
-            loop: -1
-        })
-        return this.scene.add.container(0, 0, [this.knightBody, this.knightHead]);
+    createEntityContainer(): Container {
+        this.princessContainer = new PrincessContainer(this.mainScene, 0, 0)
+        this.princessContainer.setHappy();
+        this.princessContainer.scale = 0
+        this.knightContainer = new KnightContainer(this.mainScene, 0, 0)
+        return this.scene.add.container(0, 0, [this.knightContainer, this.princessContainer])
     }
 
     getName(): EntityName {
         return "knight";
     }
 
+    setHasPrincess(val: boolean) {
+        this.savedPrincess = val;
+    }
+
+    hasPrincess() {
+        return this.savedPrincess;
+    }
+
+    public async showPrincess() {
+        await this.knightContainer.tweenMove({x: -30, y: 0})
+        this.princessContainer.setPosition(30, 0)
+        await this.princessContainer.blendIn()
+    }
 }

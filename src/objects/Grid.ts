@@ -1,19 +1,29 @@
 import {MainGameScene} from "../Game";
 import {GridEntity} from "./GridEntity";
 import {Vector2Dict} from "../general/Dict";
-import {Vector2, vector2Add, vector2Sub, vector2Unify} from "../general/MathUtils";
+import {Vector2, vector2Add, vector2Equals, vector2Sub, vector2Unify} from "../general/MathUtils";
 import {FieldManager} from "./FieldManager";
 import {EntityName} from "./EntityData";
 import {EntityFactory} from "./EntityFactory";
+import {InteractionManager} from "./InteractionManager";
+
+// export const DIRECTIONS = [
+//     {x: -1, y: 0},
+//     {x: 1, y: 0},
+//     {x: 0, y: -1},
+//     {x: 0, y: 1}
+// ]
 
 export const DIRECTIONS = [
+    {x: -1, y: -1},
     {x: -1, y: 0},
-    {x: 1, y: 0},
+    {x: -1, y: 1},
     {x: 0, y: -1},
-    {x: 0, y: 1}
+    {x: 0, y: 1},
+    {x: 1, y: -1},
+    {x: 1, y: 0},
+    {x: 1, y: 1}
 ]
-
-// export const DIRECTIONS = [ {x: -1, y: -1},{x: -1, y: 0},{x: -1, y: 1}, {x: 0, y: -1},{x: 0, y: 1},  {x: 1, y: -1},{x: 1, y: 0},{x: 1, y: 1}]
 
 export class Grid {
 
@@ -24,6 +34,8 @@ export class Grid {
     private fieldManager: FieldManager
     private entityFactory: EntityFactory;
 
+    interactionManager: InteractionManager
+
     constructor(mainScene: MainGameScene, x: number, y: number, columns: number, rows: number) {
         this.columns = columns
         this.rows = rows
@@ -31,6 +43,7 @@ export class Grid {
         this.mainScene = mainScene
         this.fieldManager = new FieldManager(mainScene, x, y, columns, rows)
         this.entityFactory = new EntityFactory()
+        this.interactionManager = new InteractionManager()
     }
 
     initEntityAt(index: Vector2, entityName: EntityName, movable: boolean): GridEntity {
@@ -42,7 +55,16 @@ export class Grid {
         return entity
     }
 
+    removeEntityAt(index: Vector2) {
+        this.entities.delete(index)
+    }
+
     async moveEntityTo(entity: GridEntity, index: Vector2) {
+        if (vector2Equals(entity.index, index)) {
+            console.log("Same index!")
+            return
+        }
+
         let isFieldFree = this.isFreeField(index)
 
         if (isFieldFree) {
@@ -78,20 +100,18 @@ export class Grid {
         return result
     }
 
-    private async letInteract(firstEntity: GridEntity, secondEntity: GridEntity) {
-        firstEntity.shake()
-        await secondEntity.shake()
-    }
-
-    async moveEntityAndInteractWithField(mainEntity: GridEntity, pointerIndex: Vector2) {
-        let direction = vector2Unify(vector2Sub(pointerIndex, mainEntity.index))
-        let lastIndexBeforePointer = vector2Sub(pointerIndex, direction)
-        await this.moveEntityTo(mainEntity, lastIndexBeforePointer)
-        let otherEntity = this.entities.get(pointerIndex)
-        await this.letInteract(mainEntity, otherEntity)
-        if (this.isFreeField(pointerIndex)) {
-            await this.moveEntityTo(mainEntity, pointerIndex)
+    async moveEntityAndInteractWithField(mainEntity: GridEntity, otherEntity: GridEntity) {
+        if (!this.interactionManager.canInteract(mainEntity, otherEntity)) {
+            mainEntity.shake()
+            await otherEntity.shake()
+            return
         }
+
+        let otherIndex = otherEntity.index
+        let direction = vector2Unify(vector2Sub(otherIndex, mainEntity.index))
+        let lastIndexBeforePointer = vector2Sub(otherIndex, direction)
+        await this.moveEntityTo(mainEntity, lastIndexBeforePointer)
+        await this.interactionManager.letInteract(mainEntity, otherEntity, this.mainScene)
     }
 
     getEntityAt(pointerIndex: Vector2) {

@@ -1,4 +1,6 @@
 import {Vector2} from "./MathUtils";
+import {EntityName} from "../objects/EntityData";
+import first = Phaser.Display.Canvas.CanvasPool.first;
 
 export class Dict<K, V> {
     private map = new Map<string, [K, V]>()
@@ -57,8 +59,11 @@ export class Vector2Dict<V> extends Dict<Vector2, V> {
     }
 }
 
-export class NeighborPairDict<V> extends Dict<[Vector2, Vector2], V> {
-    constructor(entries?: Iterable<[[Vector2, Vector2], V]>) {
-        super(([v, w]) => "" + v.x + "," + v.y + "->" + w.x + "," + w.y, entries);
+export class EntityNamePairDict<V> extends Dict<[EntityName, EntityName], V> {
+    constructor(entries?: Iterable<[[EntityName, EntityName], V]>) {
+        super(([v, w]) => {
+            let [first, second] = [v, w].sort((a, b) => a.localeCompare(b))
+            return first + "_" + second
+        }, entries);
     }
 }

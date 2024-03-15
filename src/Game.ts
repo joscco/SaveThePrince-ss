@@ -5,17 +5,21 @@ import {GridEntity} from "./objects/GridEntity";
 import GameConfig = Phaser.Types.Core.GameConfig;
 import Center = Phaser.Scale.Center;
 import Pointer = Phaser.Input.Pointer;
+import {WinScreen} from "./objects/WinScreen";
+import {InteractionManager} from "./objects/InteractionManager";
 
 export const GAME_HEIGHT = 1080;
 export const GAME_WIDTH = 1080;
 
 export class MainGameScene extends Phaser.Scene {
     grid: Grid
+    winScreen: WinScreen
 
-    entityWaitingForInput: GridEntity
-    moving: boolean
-    waitingForNextPosition: boolean
-    possibleNextIndices: [Vector2, boolean][]
+    levelResolved: boolean = false
+    moving: boolean = false
+    waitingForNextPosition: boolean = false
+    entityWaitingForInput: GridEntity = undefined
+    possibleNextIndices: [Vector2, boolean][] = []
 
     constructor() {
         super('main');
@@ -33,6 +37,7 @@ export class MainGameScene extends Phaser.Scene {
         this.load.image('entities.knight.body', 'assets/images/entities/knightBody.png');
 
         this.load.image('entities.princess.fearfulHead', 'assets/images/entities/fearfulPrincessHead.png');
+        this.load.image('entities.princess.happyHead', 'assets/images/entities/happyPrincessHead.png');
         this.load.image('entities.princess.body', 'assets/images/entities/princessBody.png');
         this.load.image('entities.princess.arm', 'assets/images/entities/princessArm.png');
 
@@ -41,6 +46,7 @@ export class MainGameScene extends Phaser.Scene {
 
     create() {
         this.grid = new Grid(this, GAME_WIDTH / 2, GAME_HEIGHT / 2, 7, 7)
+        this.winScreen = new WinScreen(this, GAME_WIDTH/2, GAME_HEIGHT/2)
         this.setupFirstLevel()
 
         this.input.on('pointerup', async (pointer: Pointer) => {
@@ -58,8 +64,10 @@ export class MainGameScene extends Phaser.Scene {
                                 this.moving = false
                             } else {
                                 // If field is taken, interact
+                                let controlledEntity = this.entityWaitingForInput
+                                let otherEntity = this.grid.getEntityAt(pointerIndex)
                                 this.moving = true
-                                await this.grid.moveEntityAndInteractWithField(this.entityWaitingForInput, pointerIndex)
+                                await this.grid.moveEntityAndInteractWithField(controlledEntity, otherEntity)
                                 this.moving = false
                             }
                         }
@@ -71,7 +79,7 @@ export class MainGameScene extends Phaser.Scene {
                         let entity = this.grid.getEntityAt(pointerIndex)
                         if (!entity.movable) {
                             // Entity cannot move
-                            entity.shake()
+                            await entity.shake()
                             return
                         }
 
@@ -80,7 +88,6 @@ export class MainGameScene extends Phaser.Scene {
                         await this.grid.blendInPossibleFieldHints(possibleNextPositions)
                         this.waitingForNextPosition = true
                         this.possibleNextIndices = possibleNextPositions
-
                     }
                 }
             }
@@ -102,6 +109,14 @@ export class MainGameScene extends Phaser.Scene {
         this.grid.initEntityAt({x: 4, y: 4}, "tree", false).blendIn(300)
         this.grid.initEntityAt({x: 5, y: 2}, "tree", false).blendIn(350)
         this.grid.initEntityAt({x: 5, y: 4}, "tree", false).blendIn(400)
+    }
+
+    async resolveLevel() {
+        await this.winScreen.blendIn()
+    }
+
+    removeEntityAt(index: Vector2) {
+        this.grid.removeEntityAt(index)
     }
 }
 

@@ -6,7 +6,7 @@ export class Tree extends GridEntity {
 
     treeImage: Image
 
-    createImageContainer(): Phaser.GameObjects.Container {
+    createEntityContainer(): Phaser.GameObjects.Container {
         this.treeImage = this.scene.add.image(0, -50, "entities.tree")
         return this.scene.add.container(0, 0, [this.treeImage]);
     }
