@@ -34,6 +34,7 @@ export class MainGameScene extends Phaser.Scene {
 
         this.load.image('entities.princess.fearfulHead', 'assets/images/entities/fearfulPrincessHead.png');
         this.load.image('entities.princess.body', 'assets/images/entities/princessBody.png');
+        this.load.image('entities.princess.arm', 'assets/images/entities/princessArm.png');
 
         this.load.image('entities.tree', 'assets/images/entities/tree.png');
     }
