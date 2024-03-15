@@ -92,7 +92,7 @@ export class MainGameScene extends Phaser.Scene {
         this.grid.initEntityAt({x: 0, y: 3}, "castle", false).blendIn()
         this.grid.initEntityAt({x: 1, y: 3}, "knight", true).blendIn(300)
 
-        this.grid.initEntityAt({x: 4, y: 3}, "princess", true).blendIn(50)
+        this.grid.initEntityAt({x: 4, y: 3}, "princess", false).blendIn(50)
 
         this.grid.initEntityAt({x: 3, y: 2}, "tree", false).blendIn(100)
         this.grid.initEntityAt({x: 3, y: 3}, "tree", false).blendIn(150)

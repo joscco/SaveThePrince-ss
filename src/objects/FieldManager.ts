@@ -5,7 +5,7 @@ import {Vector2Dict} from "../general/Dict";
 
 export class FieldManager {
 
-    private static FIELD_WIDTH: number = 142
+    private static FIELD_WIDTH: number = 137
     private static FIELD_HEIGHT: number = 137
 
     private readonly scene: MainGameScene
