@@ -1,6 +1,6 @@
 import Image = Phaser.GameObjects.Image;
-import {MainGameScene} from "../../Game";
 import {EntityContainer} from "./EntityContainer";
+import {MainGameScene} from "../../scenes/MainGameScene";
 
 export class WolfContainer extends EntityContainer {
 
@@ -12,7 +12,7 @@ export class WolfContainer extends EntityContainer {
 
         this.wolfBody = this.scene.add.image(0, 0, 'entities.wolf.body')
         this.wolfBody.setOrigin(0.5, 1)
-        this.wolfHead = this.scene.add.image(0, 0, 'entities.wolf.aggressiveHead')
+        this.wolfHead = this.scene.add.image(0, 0, 'entities.wolf.angryHead')
 
         this.add([ this.wolfBody, this.wolfHead])
         
@@ -23,8 +23,8 @@ export class WolfContainer extends EntityContainer {
         this.wolfBody.setTexture('entities.wolf.body')
         this.wolfBody.setPosition(0, 50)
 
-        this.wolfHead.setTexture('entities.wolf.aggressiveHead')
-        this.wolfHead.setPosition(40, -30)
+        this.wolfHead.setTexture('entities.wolf.angryHead')
+        this.wolfHead.setPosition(0, -65)
 
         this.animateAggressiveWolf();
     }
@@ -34,7 +34,7 @@ export class WolfContainer extends EntityContainer {
         this.scene.tweens.add({
             targets: this.wolfHead,
             ease: Phaser.Math.Easing.Quadratic.InOut,
-            y: -25,
+            y: -60,
             yoyo: true,
             duration: 800,
             loop: -1

@@ -15,7 +15,4 @@ export class Tree extends GridEntity {
         return "tree";
     }
 
-    flip(lookingLeft: boolean) {
-    }
-
 }

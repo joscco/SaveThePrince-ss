@@ -1,6 +1,6 @@
 import Image = Phaser.GameObjects.Image;
-import {MainGameScene} from "../../Game";
 import {EntityContainer} from "./EntityContainer";
+import {MainGameScene} from "../../scenes/MainGameScene";
 
 export class SwordStoneContainer extends EntityContainer {
 

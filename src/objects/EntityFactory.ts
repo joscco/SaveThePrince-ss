@@ -1,4 +1,3 @@
-import {MainGameScene} from "../Game";
 import {EntityName} from "./EntityData";
 import {Castle} from "./entities/Castle";
 import {Knight} from "./entities/Knight";
@@ -7,6 +6,7 @@ import {Princess} from "./entities/Princess";
 import {Tree} from "./entities/Tree";
 import {Wolf} from "./entities/Wolf";
 import {SwordStone} from "./entities/SwordStone";
+import {MainGameScene} from "../scenes/MainGameScene";
 
 export class EntityFactory {
     public create(scene: MainGameScene, x: number, y: number, entityName: EntityName): GridEntity {

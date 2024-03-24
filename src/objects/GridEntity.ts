@@ -1,8 +1,8 @@
 import {EntityName} from "./EntityData";
-import {MainGameScene} from "../Game";
-import {Vector2, vector2Dist, vector2Sub} from "../general/MathUtils";
+import {Vector2, vector2Sub} from "../general/MathUtils";
 import Container = Phaser.GameObjects.Container;
 import Vector2Like = Phaser.Types.Math.Vector2Like;
+import {MainGameScene} from "../scenes/MainGameScene";
 
 export abstract class GridEntity extends Container {
 
@@ -31,23 +31,22 @@ export abstract class GridEntity extends Container {
     async tweenMoveTo(pos: Vector2Like) {
         var direction = vector2Sub({x: pos.x, y: pos.y}, {x: this.x, y: this.y})
 
-        if (direction.x > 0) {
-            this.flip(false)
-        } else if (direction.x < 0) {
-            this.flip(true)
-        }
+        this.adaptToMoveDirection(direction)
+
         return new Promise<void>((resolve) => this.scene.tweens.add({
             targets: this,
             x: pos.x,
             y: pos.y,
-            duration: 400,
-            ease: Phaser.Math.Easing.Sine.Out,
+            duration: 150,
+            ease: Phaser.Math.Easing.Quadratic.InOut,
             onComplete: () => resolve(),
             onUpdate: () => {this.depth = this.y}
         }))
     }
 
-    abstract flip(lookingLeft: boolean)
+    adaptToMoveDirection(direction: Vector2) {
+        // this can be overrideable for flipping etc
+    }
 
     setIndex(index: Vector2) {
         this.index = index

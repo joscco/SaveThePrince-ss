@@ -16,7 +16,4 @@ export class Wolf extends GridEntity {
     getName(): EntityName {
         return "wolf";
     }
-
-    flip(lookingLeft: boolean) {
-    }
 }

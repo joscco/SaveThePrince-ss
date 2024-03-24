@@ -18,9 +18,6 @@ export class SwordStone extends GridEntity {
         return "swordStone";
     }
 
-    flip(lookingLeft: boolean) {
-    }
-
     hasSword() {
         return this._hasSword;
     }

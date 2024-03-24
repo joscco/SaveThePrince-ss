@@ -1,7 +1,7 @@
 import Image = Phaser.GameObjects.Image;
 import Tween = Phaser.Tweens.Tween;
 import {Vector2} from "../general/MathUtils";
-import {MainGameScene} from "../Game";
+import {MainGameScene} from "../scenes/MainGameScene";
 
 export class Field extends Image {
 
@@ -14,7 +14,8 @@ export class Field extends Image {
 
     constructor(scene: MainGameScene, index: Vector2, position: Vector2) {
         let {x, y} = position
-        super(scene, x, y, 'field');
+        let indexIsEvent = (index.x + index.y) % 2 == 0
+        super(scene, x, y, indexIsEvent ? 'field_even' : 'field_odd');
 
         this.inner = scene.add.image(x, y, 'focus')
         this.inner.scale = 0.7
@@ -26,29 +27,34 @@ export class Field extends Image {
         scene.add.existing(this)
     }
 
-    blendInInner(free: boolean) {
+    async blendInInner(free: boolean, delay: number = 0) {
         this.inner.setTexture(free ? 'focusFree' : 'focus')
         if (!this.innerShown) {
             this.innerShown = true
-            this.tweenScaleInner(1, 1, 200, Phaser.Math.Easing.Quadratic.Out)
+            await this.tweenScaleInner(1, 1, 150, delay, Phaser.Math.Easing.Quadratic.Out)
         }
     }
 
-    blendOutInner() {
+    async blendOutInner(delay: number = 0) {
         if (this.innerShown) {
             this.innerShown = false
-            this.tweenScaleInner(0.7, 0, 100, Phaser.Math.Easing.Quadratic.In)
+            await this.tweenScaleInner(0.7, 0, 150, delay, Phaser.Math.Easing.Quadratic.In)
         }
+        return
     }
 
-    tweenScaleInner(scale: number, alpha: number, duration: number, ease: (x: number) => number) {
+    async tweenScaleInner(scale: number, alpha: number, duration: number, delay: number, ease: (x: number) => number) {
         this.scaleTween?.remove()
-        this.scaleTween = this.scene.tweens.add({
-            targets: this.inner,
-            alpha: alpha,
-            scale: scale,
-            duration: duration,
-            ease: ease
+        return new Promise<void>(resolve => {
+            this.scaleTween = this.scene.tweens.add({
+                targets: this.inner,
+                alpha: alpha,
+                scale: scale,
+                duration: duration,
+                delay: delay,
+                ease: ease,
+                onComplete: () => resolve()
+            })
         })
     }
 

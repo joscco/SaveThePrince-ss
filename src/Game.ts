@@ -1,136 +1,12 @@
 import * as Phaser from 'phaser';
-import {Grid} from "./objects/Grid";
-import {Vector2, vector2Equals} from "./general/MathUtils";
-import {GridEntity} from "./objects/GridEntity";
-import {WinScreen} from "./objects/WinScreen";
+import {StartScene} from "./scenes/StartScene";
 import GameConfig = Phaser.Types.Core.GameConfig;
 import Center = Phaser.Scale.Center;
-import Pointer = Phaser.Input.Pointer;
+import {MainGameScene} from "./scenes/MainGameScene";
 
 export const GAME_HEIGHT = 1080;
 export const GAME_WIDTH = 1080;
 
-export class MainGameScene extends Phaser.Scene {
-    grid: Grid
-    winScreen: WinScreen
-
-    levelResolved: boolean = false
-    moving: boolean = false
-    waitingForNextPosition: boolean = false
-    entityWaitingForInput: GridEntity = undefined
-    possibleNextIndices: [Vector2, boolean][] = []
-
-    constructor() {
-        super('main');
-    }
-
-    preload() {
-        // general
-        this.load.image('field', 'assets/images/available_field.png');
-        this.load.image('focus', 'assets/images/focus.png');
-        this.load.image('focusFree', 'assets/images/focusFree.png');
-
-        // entities
-        this.load.image('entities.castle', 'assets/images/entities/castle.png');
-
-        this.load.image('entities.knight.head', 'assets/images/entities/knightHead.png');
-        this.load.image('entities.knight.deadHead', 'assets/images/entities/deadKnightHead.png');
-        this.load.image('entities.knight.body', 'assets/images/entities/knightBody.png');
-        this.load.image('entities.knight.arm', 'assets/images/entities/plainArm.png');
-        this.load.image('entities.knight.armWithSword', 'assets/images/entities/armWithSword.png');
-
-        this.load.image('entities.princess.fearfulHead', 'assets/images/entities/fearfulPrincessHead.png');
-        this.load.image('entities.princess.happyHead', 'assets/images/entities/happyPrincessHead.png');
-        this.load.image('entities.princess.body', 'assets/images/entities/princessBody.png');
-        this.load.image('entities.princess.arm', 'assets/images/entities/princessArm.png');
-
-        this.load.image('entities.wolf.aggressiveHead', 'assets/images/entities/angryWolfHead.png');
-        this.load.image('entities.wolf.body', 'assets/images/entities/wolfBody.png');
-
-        this.load.image('entities.swordStone.withSword', 'assets/images/entities/stoneWithSword.png');
-        this.load.image('entities.swordStone.withoutSword', 'assets/images/entities/stoneWithoutSword.png');
-
-        this.load.image('entities.tree', 'assets/images/entities/tree.png');
-    }
-
-    create() {
-        this.grid = new Grid(this, GAME_WIDTH / 2, GAME_HEIGHT / 2, 7, 7)
-        this.winScreen = new WinScreen(this, GAME_WIDTH/2, GAME_HEIGHT/2)
-        this.setupFirstLevel()
-
-        this.input.on('pointerup', async (pointer: Pointer) => {
-            if (!this.moving) {
-                if (this.waitingForNextPosition) {
-                    let pointerIndex = this.grid.getClosestFieldIndexTo(pointer)
-                    await this.grid.blendOutPossibleFieldHints(this.possibleNextIndices.map(([index, _]) => index))
-                    if (pointerIndex) {
-                        this.waitingForNextPosition = false
-                        if (this.possibleNextIndices.some(([index, _]) => vector2Equals(index, pointerIndex))) {
-                            // If field is free, just move
-                            if (this.grid.isFreeField(pointerIndex)) {
-                                this.moving = true
-                                await this.grid.moveEntityTo(this.entityWaitingForInput, pointerIndex)
-                                this.moving = false
-                            } else {
-                                // If field is taken, interact
-                                let controlledEntity = this.entityWaitingForInput
-                                let otherEntity = this.grid.getEntityAt(pointerIndex)
-                                this.moving = true
-                                await this.grid.moveEntityAndInteractWithField(controlledEntity, otherEntity)
-                                this.moving = false
-                            }
-                        }
-                    }
-                } else {
-                    let pointerIndex = this.grid.getClosestFieldIndexTo(pointer)
-                    if (pointerIndex && !this.grid.isFreeField(pointerIndex)) {
-                        // Mark entity and show possible next fields
-                        let entity = this.grid.getEntityAt(pointerIndex)
-                        if (!entity.movable) {
-                            // Entity cannot move
-                            await entity.shake()
-                            return
-                        }
-
-                        this.entityWaitingForInput = entity
-                        let possibleNextPositions = this.grid.findNextPossibleIndices(pointerIndex)
-                        await this.grid.blendInPossibleFieldHints(possibleNextPositions)
-                        this.waitingForNextPosition = true
-                        this.possibleNextIndices = possibleNextPositions
-                    }
-                }
-            }
-        })
-    }
-
-    private async setupFirstLevel() {
-        await this.grid.blendInFields()
-
-        this.grid.initEntityAt({x: 0, y: 3}, "castle", false).blendIn()
-        this.grid.initEntityAt({x: 1, y: 3}, "knight", true).blendIn(300)
-
-        this.grid.initEntityAt({x: 4, y: 3}, "princess", false).blendIn(50)
-
-        this.grid.initEntityAt({x: 3, y: 2}, "tree", false).blendIn(100)
-        this.grid.initEntityAt({x: 3, y: 3}, "tree", false).blendIn(150)
-        this.grid.initEntityAt({x: 3, y: 4}, "tree", false).blendIn(200)
-        this.grid.initEntityAt({x: 4, y: 2}, "tree", false).blendIn(250)
-        this.grid.initEntityAt({x: 4, y: 4}, "tree", false).blendIn(300)
-        this.grid.initEntityAt({x: 5, y: 2}, "tree", false).blendIn(350)
-        this.grid.initEntityAt({x: 5, y: 4}, "tree", false).blendIn(400)
-
-        this.grid.initEntityAt({x: 5, y: 5}, "wolf", false).blendIn(400)
-        this.grid.initEntityAt({x: 2, y: 5}, "swordStone", false).blendIn(400)
-    }
-
-    async resolveLevel() {
-        await this.winScreen.blendIn()
-    }
-
-    removeEntityAt(index: Vector2) {
-        this.grid.removeEntityAt(index)
-    }
-}
 
 const config: GameConfig = {
     type: Phaser.AUTO,
@@ -151,7 +27,7 @@ const config: GameConfig = {
             height: GAME_HEIGHT
         }
     },
-    scene: MainGameScene,
+    scene: [StartScene, MainGameScene],
 };
 
 new Phaser.Game(config);

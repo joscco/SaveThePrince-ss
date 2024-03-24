@@ -1,19 +1,20 @@
 import {EntityNamePairDict} from "../general/Dict";
 import {GridEntity} from "./GridEntity";
-import {MainGameScene} from "../Game";
 import {EntityName} from "./EntityData";
 import {Knight} from "./entities/Knight";
 import {Princess} from "./entities/Princess";
 import {Castle} from "./entities/Castle";
 import {Wolf} from "./entities/Wolf";
 import {SwordStone} from "./entities/SwordStone";
+import {vector2Dist, vector2Sub} from "../general/MathUtils";
+import {MainGameScene} from "../scenes/MainGameScene";
 
 export type Action = {
     interact: (a: GridEntity, b: GridEntity, mainScene?: MainGameScene) => Promise<void>
     canInteract: (a: GridEntity, b: GridEntity, mainScene?: MainGameScene) => boolean
 }
 
-export const ACTIONS = new EntityNamePairDict<Action>([
+export const DemandedActions = new EntityNamePairDict<Action>([
     [
         // Knight and Princess
         ['knight', 'princess'],
@@ -49,7 +50,7 @@ export const ACTIONS = new EntityNamePairDict<Action>([
             canInteract: (a, b) => true,
             interact: async (a, b, mainScene) => {
                 let [knight, wolf] = sortByNames(a, b, 'knight') as [Knight, Wolf]
-                if (knight.hasSword()) {
+                if (knight.has('sword')) {
                     await knight.shake()
                     mainScene.removeEntityAt(wolf.index)
                     await wolf.blendOutThenDestroy()
@@ -66,12 +67,37 @@ export const ACTIONS = new EntityNamePairDict<Action>([
         {
             canInteract: (a, b) => {
                 let [knight, swordStone] = sortByNames(a, b, 'knight') as [Knight, SwordStone]
-                return !knight.hasSword() && swordStone.hasSword()
+                return !knight.has('sword') && swordStone.hasSword()
             },
             interact: async (a, b, mainScene) => {
                 let [knight, swordStone] = sortByNames(a, b, 'knight') as [Knight, SwordStone]
                 knight.setSword(true)
                 swordStone.setSword(false)
+            }
+        }
+    ],
+])
+
+export const AutomaticActions = new EntityNamePairDict<Action>([
+    [
+        ['knight', 'wolf'],
+        {
+            canInteract: (a, b) => {
+                let [knight, wolf] = sortByNames(a, b, 'knight') as [Knight, Wolf]
+                let nearEnough = 2 > vector2Dist(vector2Sub(knight.index, wolf.index))
+                return nearEnough && !knight.isDead()
+            },
+            interact: async (a, b, mainScene) => {
+                let [knight, wolf] = sortByNames(a, b, 'knight') as [Knight, Wolf]
+                if (knight.has('sword')) {
+                    await knight.
+                    mainScene.removeEntityAt(wolf.index)
+                    await wolf.blendOutThenDestroy()
+                    return
+                }
+
+                await wolf.shake()
+                await knight.die()
             }
         }
     ],

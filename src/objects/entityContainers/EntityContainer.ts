@@ -1,6 +1,6 @@
 import Container = Phaser.GameObjects.Container;
-import {MainGameScene} from "../../Game";
 import {Vector2} from "../../general/MathUtils";
+import {MainGameScene} from "../../scenes/MainGameScene";
 
 export abstract class EntityContainer extends Container {
     constructor(scene: MainGameScene, x: number, y: number) {

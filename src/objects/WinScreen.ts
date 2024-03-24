@@ -1,7 +1,7 @@
 import Container = Phaser.GameObjects.Container;
 import NineSlice = Phaser.GameObjects.NineSlice;
 import Text = Phaser.GameObjects.Text;
-import {MainGameScene} from "../Game";
+import {MainGameScene} from "../scenes/MainGameScene";
 
 export class WinScreen extends Container {
     private background: NineSlice
@@ -11,7 +11,7 @@ export class WinScreen extends Container {
 
     constructor(scene: MainGameScene, x: number, y: number) {
         super(scene, x, y);
-        this.background = this.scene.add.nineslice(0, 0, 'field', 0, 800, 400, 10, 10, 10, 10)
+        this.background = this.scene.add.nineslice(0, 0, 'field_even', 0, 800, 400, 10, 10, 10, 10)
         this.text = this.scene.add.text(0, 0, 'Won!', {
             fontSize: 100,
             color: "0x000000",

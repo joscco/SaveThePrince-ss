@@ -6,7 +6,11 @@ export function vector2Neighbors(index: Vector2): Vector2[] {
         .map(summand => vector2Add(index, {x: summand[0], y: summand[1]}))
 }
 
-export function vector2Dist(d: Vector2): number{
+export function vector2Manhattan(a, b) {
+    return Math.abs(a.x - b.x) + Math.abs(a.y - b.y)
+}
+
+export function vector2Dist(d: Vector2): number {
     return Math.sqrt(d.x * d.x + d.y * d.y)
 }
 
