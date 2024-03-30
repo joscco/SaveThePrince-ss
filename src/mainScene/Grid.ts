@@ -29,7 +29,7 @@ export class Grid {
 
     private readonly actionLabel: ActionLabel
     private readonly entities: Vector2Dict<GridEntity>
-    private readonly fields: Vector2Dict<Field>
+    private fields: Vector2Dict<Field>
     private pathFinder: GridPathFinder
     private entityFactory: EntityFactory;
     private interactionManager: InteractionManager
@@ -37,21 +37,29 @@ export class Grid {
     // This is the only thin really needed
     columns: number
     rows: number
+    x: number
+    y: number
     private gridCalculator: GridCalculator
 
-    constructor(mainScene: MainGameScene, x: number, y: number, columns: number, rows: number) {
-        this.columns = columns
-        this.rows = rows
-
+    constructor(mainScene: MainGameScene, x: number, y: number) {
         this.mainScene = mainScene
-        this.gridCalculator = new GridCalculator(x, y - 50, columns, rows, FIELD_WIDTH, FIELD_HEIGHT)
+        this.x = x
+        this.y = y
+
         this.pathFinder = new GridPathFinder(v => this.isFreeField(v) && this.hasIndex(v), DIRECTIONS)
         this.entityFactory = new EntityFactory()
         this.interactionManager = new InteractionManager()
 
-        this.actionLabel = new ActionLabel(mainScene, {x: x, y: y + 450}, GAME_WIDTH - 200, 100)
+        this.actionLabel = new ActionLabel(mainScene, {x: x, y: y - 450}, GAME_WIDTH - 200, 100)
         this.entities = new Vector2Dict()
-        this.fields = this.initFields()
+        this.fields = new Vector2Dict<Field>()
+    }
+
+    init(columns: number, rows: number) {
+        this.columns = columns
+        this.rows = rows
+        this.gridCalculator = new GridCalculator(this.x, this.y + 50, columns, rows, FIELD_WIDTH, FIELD_HEIGHT)
+        this.initFields()
     }
 
     initEntityAt(index: Vector2D, entityName: EntityName, movable: boolean, facingRight: boolean = true): GridEntity {
@@ -113,6 +121,7 @@ export class Grid {
         let entityNeighbors = this.interactionManager.findReactiveNeighbors(this.entities)
         while (entityNeighbors.length > 0) {
             let [firstEntity, secondEntity, firstAction] = entityNeighbors[0]
+            this.actionLabel.changeText(firstAction.getDescription(firstEntity, secondEntity, this.mainScene))
             await firstAction.interact(firstEntity, secondEntity, this.mainScene)
             entityNeighbors = this.interactionManager.findReactiveNeighbors(this.entities)
         }
@@ -182,7 +191,6 @@ export class Grid {
     }
 
     private initFields() {
-        let fields = new Vector2Dict<Field>();
         for (let indX = 0; indX < this.columns; indX++) {
             for (let indY = 0; indY < this.rows; indY++) {
                 let index = {x: indX, y: indY}
@@ -192,10 +200,9 @@ export class Grid {
                     this.gridCalculator.getPositionForIndex(index)
                 )
                 field.depth = -100
-                fields.set(index, field)
+                this.fields.set(index, field)
             }
         }
-        return fields
     }
 
     findPath(fromIndex: Vector2D, toIndex: Vector2D, includeLast: boolean) {

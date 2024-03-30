@@ -11,14 +11,12 @@ export class StartScene extends Phaser.Scene {
 
     preload() {
         // general
-        this.load.image('startScene_background', 'assets/images/startScene/background.png');
         this.load.image('startScene_logo', 'assets/images/startScene/logo.png');
         this.load.image('startScene_startButton', 'assets/images/startScene/startButton.png');
         this.load.image('startScene_title', 'assets/images/startScene/title.png');
     }
 
     create() {
-        this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'startScene_background')
         this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 300, 'startScene_logo')
         this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 50, 'startScene_title')
         let startButton = new Button(this, {x: GAME_WIDTH / 2, y: GAME_HEIGHT / 2 + 350}, 'startScene_startButton')

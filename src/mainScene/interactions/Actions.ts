@@ -6,9 +6,7 @@ import {Princess} from "../entities/princess/Princess";
 import {Castle} from "../entities/castle/Castle";
 import {Wolf} from "../entities/wolf/Wolf";
 import {SwordStone} from "../entities/swordStone/SwordStone";
-import {vector2Dist, vector2Sub} from "../../general/MathUtils";
 import {MainGameScene} from "../../scenes/MainGameScene";
-import {wait} from "../../general/AsyncUtils";
 import {WolfAndKnightActionAutomatic, WolfAndKnightActionOnDemand} from "./WolfAndKnight";
 
 export type Action = {
@@ -27,7 +25,7 @@ export const DemandedActions = new EntityNamePairDict<Action>([
             interact: async (a, b, mainScene) => {
                 let [knight, princess] = sortByNames(a, b, 'knight') as [Knight, Princess]
                 mainScene.removeEntityAt(princess.index)
-                await princess.blendOutThenDestroy()
+                await Promise.all([princess.blendOutThenDestroy(), knight.attack({x: princess.x, y: princess.y})])
                 knight.setHasPrincess(true)
                 await knight.showPrincess()
             }
@@ -42,8 +40,9 @@ export const DemandedActions = new EntityNamePairDict<Action>([
                 return knight.hasPrincess()
             },
             interact: async (a, b, mainScene) => {
-                let [knight, _] = sortByNames(a, b, 'knight') as [Knight, Castle]
+                let [knight, castle] = sortByNames(a, b, 'knight') as [Knight, Castle]
                 if (knight.hasPrincess()) {
+                    await knight.attack({x: castle.x, y: castle.y})
                     await mainScene.resolveLevel()
                 }
             }
@@ -60,10 +59,11 @@ export const DemandedActions = new EntityNamePairDict<Action>([
                 let [knight, swordStone] = sortByNames(a, b, 'knight') as [Knight, SwordStone]
                 return !knight.has('sword') && swordStone.hasSword()
             },
-            interact: async (a, b, mainScene) => {
+            interact: async (a, b) => {
                 let [knight, swordStone] = sortByNames(a, b, 'knight') as [Knight, SwordStone]
-                knight.setSword(true)
-                swordStone.setSword(false)
+                await knight.turnTowards(swordStone.index)
+                await Promise.all([knight.attack({x: swordStone.x, y: swordStone.y}), swordStone.setSword(false)])
+                await knight.setSword(true)
             }
         }
     ],
@@ -72,6 +72,20 @@ export const DemandedActions = new EntityNamePairDict<Action>([
 export const AutomaticActions = new EntityNamePairDict<Action>([
     [
         ['knight', 'wolf'], WolfAndKnightActionAutomatic
+    ],
+    [
+        ['princess', 'wolf'],
+        {
+            getDescription: () => "The wolf frightens the princess.",
+            canInteract: (a, b) => {
+                let [_, princess] = sortByNames(a, b, 'wolf') as [Wolf, Princess]
+                return !princess.isFrightened()
+            },
+            interact: async (a, b) => {
+                let [wolf, princess] = sortByNames(a, b, 'wolf') as [Wolf, Princess]
+                await Promise.all([wolf.turnAggressive(), princess.turnFearful()])
+            }
+        }
     ],
 ])
 

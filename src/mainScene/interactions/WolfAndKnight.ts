@@ -21,17 +21,17 @@ const WolfAndKnightBase = {
             await wolf.turnAggressive()
             await wait(400)
             await knight.attack({x: wolf.x, y: wolf.y})
+            await Promise.all([wolf.shake(), wolf.turnDead()])
             mainScene.removeEntityAt(wolf.index)
-            await wolf.turnDead()
-            await wait(400)
             await wolf.blendOutThenDestroy()
         } else {
             await wolf.turnAggressive()
             await knight.turnFearful()
             await wait(400)
             await wolf.attack({x: knight.x, y: knight.y})
-            await knight.turnDead()
-            await wolf.turnNeutral()
+            await Promise.all([knight.shake(), knight.turnDead(), wolf.turnNeutral()])
+            mainScene.removeEntityAt(knight.index)
+            await knight.blendOutThenDestroy()
         }
     }
 }
@@ -40,7 +40,7 @@ export const WolfAndKnightActionAutomatic: Action = {
     ...WolfAndKnightBase,
     canInteract: (a, b) => {
         let [knight, wolf] = sortByNames(a, b, 'knight') as [Knight, Wolf]
-        let nearEnough = 1 >= vector2Dist(vector2Sub(knight.index, wolf.index))
+        let nearEnough = 2 >= vector2Dist(vector2Sub(knight.index, wolf.index))
         return nearEnough && !knight.isDead()
     },
 }

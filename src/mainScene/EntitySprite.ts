@@ -33,10 +33,10 @@ export class EntitySprite extends Phaser.GameObjects.Image {
             duration: 200,
             scaleX: adaptedScale,
             scaleY: scale,
-            ease: Phaser.Math.Easing.Back.Out,
+            ease: Phaser.Math.Easing.Quadratic.InOut,
             onComplete: () => resolve(),
-            onUpdate: () => {
-                if (!inMidPerformed && Math.abs(this.scaleX) < 0.4) {
+            onUpdate: (tween) => {
+                if (!inMidPerformed && tween.progress > 0.5) {
                     inMidPerformed = true
                     if (inMid) {
                         inMid()

@@ -21,7 +21,7 @@ export class LevelButton extends Container {
         this.text.setOrigin(0.5, 0.5)
         this.scale = 0
         this.add([this.image, this.text])
-        this.setInteractive(new Circle(0, 0, 100), Phaser.Geom.Circle.Contains)
+        this.setInteractive(new Circle(0, 0, 50), Phaser.Geom.Circle.Contains)
         levelScene.add.existing(this)
     }
 
@@ -33,7 +33,11 @@ export class LevelButton extends Container {
         await this.tweenScale(0, delay)
     }
 
-    async tweenScale(scale: number, delay: number = 0) {
+    async scaleUp() {
+        await this.tweenScale(1.2)
+    }
+
+    private async tweenScale(scale: number, delay: number = 0) {
         return new Promise<void>(resolve => this.scene.tweens.add({
             targets: this,
             duration: 300,
@@ -44,4 +48,6 @@ export class LevelButton extends Container {
             onComplete: () => resolve()
         }))
     }
+
+
 }

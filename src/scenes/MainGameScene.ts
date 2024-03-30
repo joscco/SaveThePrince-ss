@@ -4,7 +4,6 @@ import {GridEntity} from "../mainScene/entities/GridEntity";
 import {Vector2D, vector2Equals} from "../general/MathUtils";
 import {GAME_HEIGHT, GAME_WIDTH} from "../Game";
 import Pointer = Phaser.Input.Pointer;
-import {Wolf} from "../mainScene/entities/wolf/Wolf";
 
 export class MainGameScene extends Phaser.Scene {
     grid: Grid
@@ -39,7 +38,12 @@ export class MainGameScene extends Phaser.Scene {
         this.load.image('entities.knight.dead', 'assets/images/mainScene/entities/knight_dead.png');
 
         this.load.image('entities.items.sword', 'assets/images/mainScene/entities/item_sword.png');
+        this.load.image('entities.items.meat', 'assets/images/mainScene/entities/item_meat.png');
+        this.load.image('entities.items.key', 'assets/images/mainScene/entities/item_key.png');
+        this.load.image('entities.items.emptyBucket', 'assets/images/mainScene/entities/item_emptyBucket.png');
+        this.load.image('entities.items.fullBucket', 'assets/images/mainScene/entities/item_fullBucket.png');
 
+        this.load.image('entities.princess.neutral', 'assets/images/mainScene/entities/princess_neutral.png');
         this.load.image('entities.princess.fearful', 'assets/images/mainScene/entities/princess_fearful.png');
         this.load.image('entities.princess.happy', 'assets/images/mainScene/entities/princess_happy.png');
         this.load.image('entities.princess.dead', 'assets/images/mainScene/entities/princess_neutral.png');
@@ -49,6 +53,11 @@ export class MainGameScene extends Phaser.Scene {
         this.load.image('entities.wolf.happy', 'assets/images/mainScene/entities/wolf_happy.png');
         this.load.image('entities.wolf.dead', 'assets/images/mainScene/entities/wolf_dead.png');
 
+        this.load.image('entities.fire', 'assets/images/mainScene/entities/fire.png');
+        this.load.image('entities.well', 'assets/images/mainScene/entities/well.png');
+        this.load.image('entities.fireplace.withMeat', 'assets/images/mainScene/entities/fireplace_with_meat.png');
+        this.load.image('entities.fireplace.withoutMeat', 'assets/images/mainScene/entities/fireplace_without_meat.png');
+
         this.load.image('entities.swordStone.withSword', 'assets/images/mainScene/entities/sword_stone_filled.png');
         this.load.image('entities.swordStone.withoutSword', 'assets/images/mainScene/entities/sword_stone_empty.png');
 
@@ -56,7 +65,7 @@ export class MainGameScene extends Phaser.Scene {
     }
 
     create() {
-        this.grid = new Grid(this, GAME_WIDTH / 2, GAME_HEIGHT / 2, 8, 7)
+        this.grid = new Grid(this, GAME_WIDTH / 2, GAME_HEIGHT / 2)
         this.winScreen = new WinScreen(this, GAME_WIDTH / 2, GAME_HEIGHT / 2)
         this.setupLevel(this.level)
 
@@ -127,12 +136,12 @@ export class MainGameScene extends Phaser.Scene {
                         if (!entity.movable) {
                             // Entity cannot move
                             let descriptionName = entity.getDescriptionName()
-                            this.grid.changeText(`${descriptionName.name}. (not movable)`)
+                            this.grid.changeText(`${descriptionName.name} - not movable`)
                             await entity.shake()
                             return
                         }
 
-                        this.grid.changeText(entity.getDescriptionName().name + ".")
+                        this.grid.changeText(entity.getDescriptionName().name)
                         this.entityWaitingForInput = entity
                         await this.entityWaitingForInput.scaleUp()
                         await this.grid.blendInFieldHints(entity.index)
@@ -146,24 +155,50 @@ export class MainGameScene extends Phaser.Scene {
     private async setupLevel(level: number) {
         switch (level) {
             case 1:
+                // Princess in the woods
+                this.grid.init(7, 7)
                 await this.grid.blendInGridInRandomOrder()
                 await Promise.all([
-                    this.grid.initEntityAt({x: 0, y: 3}, "castle", false).blendIn(),
-                    this.grid.initEntityAt({x: 1, y: 3}, "knight", true).blendIn(300),
+                    this.grid.initEntityAt({x: 2, y: 0}, "castle", false).blendIn(),
+                    this.grid.initEntityAt({x: 2, y: 1}, "knight", true).blendIn(100),
 
-                    this.grid.initEntityAt({x: 4, y: 3}, "princess", false).blendIn(50),
+                    this.grid.initEntityAt({x: 1, y: 3}, "tree", false).blendIn(150),
+                    this.grid.initEntityAt({x: 2, y: 3}, "tree", false).blendIn(200),
+                    this.grid.initEntityAt({x: 3, y: 3}, "tree", false).blendIn(250),
 
-                    this.grid.initEntityAt({x: 3, y: 2}, "tree", false).blendIn(100),
-                    this.grid.initEntityAt({x: 3, y: 3}, "tree", false).blendIn(150),
-                    this.grid.initEntityAt({x: 3, y: 4}, "tree", false).blendIn(200),
-                    this.grid.initEntityAt({x: 4, y: 2}, "tree", false).blendIn(250),
-                    this.grid.initEntityAt({x: 4, y: 4}, "tree", false).blendIn(300),
-                    this.grid.initEntityAt({x: 5, y: 2}, "tree", false).blendIn(350),
-                    this.grid.initEntityAt({x: 5, y: 4}, "tree", false).blendIn(400),
+                    this.grid.initEntityAt({x: 1, y: 4}, "tree", false).blendIn(300),
+                    this.grid.initEntityAt({x: 3, y: 4}, "tree", false).blendIn(350),
+                    this.grid.initEntityAt({x: 2, y: 4}, "princess", false).blendIn(400),
 
-                    this.grid.initEntityAt({x: 5, y: 3}, "wolf", false, false).blendIn(400),
-                    this.grid.initEntityAt({x: 2, y: 5}, "swordStone", false).blendIn(400)
+                    this.grid.initEntityAt({x: 1, y: 5}, "tree", false).blendIn(450),
+                    this.grid.initEntityAt({x: 3, y: 5}, "tree", false).blendIn(500)
                 ])
+                await this.grid.checkNeighbors()
+                return
+            case 2:
+                // Princess and one wolf
+                this.grid.init(7, 7)
+                await this.grid.blendInGridInRandomOrder()
+                await Promise.all([
+                    this.grid.initEntityAt({x: 3, y: 1}, "castle", false).blendIn(),
+                    this.grid.initEntityAt({x: 3, y: 5}, "swordStone", false).blendIn(100),
+                    this.grid.initEntityAt({x: 1, y: 3}, "knight", true).blendIn(200),
+                    this.grid.initEntityAt({x: 5, y: 3}, "princess", false, false).blendIn(300),
+                    this.grid.initEntityAt({x: 4, y: 3}, "wolf", false, true).blendIn(400)
+                ])
+                await this.grid.checkNeighbors()
+                return
+            case 3:
+                // Princess in a fire
+                this.grid.init(7, 7)
+                await this.grid.blendInGridInRandomOrder()
+                await Promise.all([
+                    this.grid.initEntityAt({x: 2, y: 0}, "castle", false).blendIn(),
+                    this.grid.initEntityAt({x: 2, y: 1}, "knight", true).blendIn(300),
+
+                    this.grid.initEntityAt({x: 2, y: 4}, "princess", false).blendIn(50),
+                ])
+                await this.grid.checkNeighbors()
                 return
         }
 

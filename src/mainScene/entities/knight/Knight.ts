@@ -79,17 +79,20 @@ export class Knight extends GridEntity {
     public async showPrincess() {
         await this.knightContainer.tweenMove({x: -35, y: 0})
         this.princessContainer.setPosition(35, 0)
-        await this.knightContainer.scaleHalfSize()
-        await this.princessContainer.scaleHalfSize()
+        await this.princessContainer.scaleFullSize()
     }
 
     async turnDead() {
         this._dead = true
         this.movable = false
+
         await this.knightContainer.tweenDead()
     }
 
     async turnFearful() {
+        if (this.hasPrincess()) {
+            this.princessContainer.turnFearful()
+        }
         await this.knightContainer.tweenFearful()
     }
 
