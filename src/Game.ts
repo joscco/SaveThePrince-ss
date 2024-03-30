@@ -3,9 +3,11 @@ import {StartScene} from "./scenes/StartScene";
 import GameConfig = Phaser.Types.Core.GameConfig;
 import Center = Phaser.Scale.Center;
 import {MainGameScene} from "./scenes/MainGameScene";
+import {LevelChoosingScene} from "./scenes/LevelChoosingScene";
 
 export const GAME_HEIGHT = 1080;
 export const GAME_WIDTH = 1080;
+export const NUMBER_OF_LEVELS = 1;
 
 
 const config: GameConfig = {
@@ -27,7 +29,7 @@ const config: GameConfig = {
             height: GAME_HEIGHT
         }
     },
-    scene: [StartScene, MainGameScene],
+    scene: [StartScene, LevelChoosingScene, MainGameScene],
 };
 
 new Phaser.Game(config);

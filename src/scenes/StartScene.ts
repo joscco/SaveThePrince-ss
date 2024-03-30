@@ -1,6 +1,7 @@
 import * as Phaser from 'phaser';
 import {GAME_HEIGHT, GAME_WIDTH} from "../Game";
 import {wait} from "../general/AsyncUtils";
+import {Button} from "../startScene/Button";
 
 export class StartScene extends Phaser.Scene {
 
@@ -20,15 +21,12 @@ export class StartScene extends Phaser.Scene {
         this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2, 'startScene_background')
         this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2 - 300, 'startScene_logo')
         this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 50, 'startScene_title')
-        let startButton = this.add.image(GAME_WIDTH / 2, GAME_HEIGHT / 2 + 350, 'startScene_startButton')
+        let startButton = new Button(this, {x: GAME_WIDTH / 2, y: GAME_HEIGHT / 2 + 350}, 'startScene_startButton')
 
         startButton.setInteractive()
         startButton.once('pointerup', async () => {
-            this.cameras.main.fadeOut(500, 0, 0, 0)
-            await wait(500)
-            this.scene.start('main')
-            this.cameras.main.fadeIn(500, 0, 0, 0)
-            await wait(500)
+            await startButton.wiggle()
+            this.scene.start('levels')
         })
 
     }

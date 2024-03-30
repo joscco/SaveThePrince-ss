@@ -1,13 +1,15 @@
-import {Grid} from "../objects/Grid";
-import {WinScreen} from "../objects/WinScreen";
-import {GridEntity} from "../objects/GridEntity";
-import {Vector2} from "../general/MathUtils";
+import {Grid} from "../mainScene/Grid";
+import {WinScreen} from "../mainScene/WinScreen";
+import {GridEntity} from "../mainScene/entities/GridEntity";
+import {Vector2D, vector2Equals} from "../general/MathUtils";
 import {GAME_HEIGHT, GAME_WIDTH} from "../Game";
 import Pointer = Phaser.Input.Pointer;
+import {Wolf} from "../mainScene/entities/wolf/Wolf";
 
 export class MainGameScene extends Phaser.Scene {
     grid: Grid
     winScreen: WinScreen
+    level: number
 
     levelResolved: boolean = false
     moving: boolean = false
@@ -16,6 +18,10 @@ export class MainGameScene extends Phaser.Scene {
 
     constructor() {
         super('main');
+    }
+
+    init(data: any) {
+        this.level = data.level
     }
 
     preload() {
@@ -28,40 +34,46 @@ export class MainGameScene extends Phaser.Scene {
         // entities
         this.load.image('entities.castle', 'assets/images/mainScene/entities/castle.png');
 
-        this.load.image('entities.knight.head', 'assets/images/mainScene/entities/knightHead_normal.png');
-        this.load.image('entities.knight.deadHead', 'assets/images/mainScene/entities/knightHead_dead.png');
-        this.load.image('entities.knight.body', 'assets/images/mainScene/entities/knightBody.png');
-        this.load.image('entities.hand', 'assets/images/mainScene/entities/hand.png');
+        this.load.image('entities.knight.neutral', 'assets/images/mainScene/entities/knight_neutral.png');
+        this.load.image('entities.knight.fearful', 'assets/images/mainScene/entities/knight_fearful.png');
+        this.load.image('entities.knight.dead', 'assets/images/mainScene/entities/knight_dead.png');
 
         this.load.image('entities.items.sword', 'assets/images/mainScene/entities/item_sword.png');
 
-        this.load.image('entities.princess.fearfulHead', 'assets/images/mainScene/entities/princessHead_fearful.png');
-        this.load.image('entities.princess.happyHead', 'assets/images/mainScene/entities/princessHead_happy.png');
-        this.load.image('entities.princess.body', 'assets/images/mainScene/entities/princessBody.png');
+        this.load.image('entities.princess.fearful', 'assets/images/mainScene/entities/princess_fearful.png');
+        this.load.image('entities.princess.happy', 'assets/images/mainScene/entities/princess_happy.png');
+        this.load.image('entities.princess.dead', 'assets/images/mainScene/entities/princess_neutral.png');
 
-        this.load.image('entities.wolf.angryHead', 'assets/images/mainScene/entities/wolfHead_angry.png');
-        this.load.image('entities.wolf.happyHead', 'assets/images/mainScene/entities/wolfHead_happy.png');
-        this.load.image('entities.wolf.body', 'assets/images/mainScene/entities/wolfBody.png');
+        this.load.image('entities.wolf.neutral', 'assets/images/mainScene/entities/wolf_neutral.png');
+        this.load.image('entities.wolf.angry', 'assets/images/mainScene/entities/wolf_angry.png');
+        this.load.image('entities.wolf.happy', 'assets/images/mainScene/entities/wolf_happy.png');
+        this.load.image('entities.wolf.dead', 'assets/images/mainScene/entities/wolf_dead.png');
 
-        this.load.image('entities.swordStone.withSword', 'assets/images/mainScene/entities/swordStone_withSword.png');
-        this.load.image('entities.swordStone.withoutSword', 'assets/images/mainScene/entities/swordStone_withoutSword.png');
+        this.load.image('entities.swordStone.withSword', 'assets/images/mainScene/entities/sword_stone_filled.png');
+        this.load.image('entities.swordStone.withoutSword', 'assets/images/mainScene/entities/sword_stone_empty.png');
 
-        this.load.image('entities.tree', 'assets/images/mainScene/entities/tree.png');
+        this.load.image('entities.tree', 'assets/images/mainScene/entities/forest.png');
     }
 
     create() {
         this.grid = new Grid(this, GAME_WIDTH / 2, GAME_HEIGHT / 2, 8, 7)
         this.winScreen = new WinScreen(this, GAME_WIDTH / 2, GAME_HEIGHT / 2)
-        this.setupFirstLevel()
-        //this.setupSecondLevel()
+        this.setupLevel(this.level)
 
         this.input.on('pointerup', async (pointer: Pointer) => {
             if (!this.moving && !this.levelResolved) {
                 if (this.waitingForNextPosition) {
                     let pointerIndex = this.grid.getClosestFieldIndexTo(pointer)
+                    this.waitingForNextPosition = false
+                    await this.grid.blendOutFieldAllHints()
+                    await this.entityWaitingForInput.scaleDown()
+
                     if (pointerIndex) {
-                        this.waitingForNextPosition = false
-                        await this.grid.blendOutFieldAllHints()
+                        if (vector2Equals(pointerIndex, this.entityWaitingForInput.index)) {
+                            // Clicked on selected entity, do nothing
+                            await this.grid.changeText("")
+                            return
+                        }
 
                         // If field is free, just move
                         if (this.grid.isFreeField(pointerIndex)) {
@@ -70,30 +82,38 @@ export class MainGameScene extends Phaser.Scene {
                                 this.moving = true
                                 await this.grid.blendInPathHints(path)
 
+                                let entityDescription = this.entityWaitingForInput.getDescriptionName()
+                                await this.grid.changeText(
+                                    entityDescription.name + (entityDescription.isPlural
+                                        ? "move." : " moves."))
                                 await Promise.all([
-                                    this.grid.moveEntityAlongPath(this.entityWaitingForInput, path),
-                                    this.grid.blendOutPathHints(path)
+                                    this.grid.moveEntityAlongPath(this.entityWaitingForInput, path)
                                 ])
-
                                 this.moving = false
+                            } else {
+                                await this.grid.changeText("This is not possible")
                             }
                         } else {
                             // If field is taken, interact
                             let path = this.grid.findPath(this.entityWaitingForInput.index, pointerIndex, false)
                             let controlledEntity = this.entityWaitingForInput
                             let otherEntity = this.grid.getEntityAt(pointerIndex)
-                            let canInteract = this.grid.canInteractWithField(controlledEntity, otherEntity)
+                            let canInteract = this.grid.checkIfCanInteract(this.entityWaitingForInput, otherEntity)
                             if (path && canInteract) {
                                 this.moving = true
                                 await this.grid.blendInPathHints(path)
-                                await Promise.all([
-                                    this.grid.moveEntityAndInteractWithField(controlledEntity, otherEntity, path),
-                                    this.grid.blendOutPathHints(path)
-                                ])
+                                await this.grid.moveEntityAndInteractWithField(controlledEntity, otherEntity, path)
                                 this.moving = false
                             } else {
-                                await Promise.all([controlledEntity.shake(), otherEntity.shake()])
+                                if (path) {
+                                    let firstName = controlledEntity.getDescriptionName().name
+                                    let secondName = otherEntity.getDescriptionName().name
+                                    this.grid.changeText(`${firstName} cannot interact with ${secondName}.`)
+                                } else {
+                                    this.grid.changeText("There is no path.")
+                                }
 
+                                await Promise.all([controlledEntity.shake(), otherEntity.shake()])
                             }
                         }
 
@@ -106,11 +126,15 @@ export class MainGameScene extends Phaser.Scene {
                         let entity = this.grid.getEntityAt(pointerIndex)
                         if (!entity.movable) {
                             // Entity cannot move
+                            let descriptionName = entity.getDescriptionName()
+                            this.grid.changeText(`${descriptionName.name}. (not movable)`)
                             await entity.shake()
                             return
                         }
 
+                        this.grid.changeText(entity.getDescriptionName().name + ".")
                         this.entityWaitingForInput = entity
+                        await this.entityWaitingForInput.scaleUp()
                         await this.grid.blendInFieldHints(entity.index)
                         this.waitingForNextPosition = true
                     }
@@ -119,36 +143,30 @@ export class MainGameScene extends Phaser.Scene {
         })
     }
 
-    private async setupFirstLevel() {
-        await this.grid.blendInFields()
+    private async setupLevel(level: number) {
+        switch (level) {
+            case 1:
+                await this.grid.blendInGridInRandomOrder()
+                await Promise.all([
+                    this.grid.initEntityAt({x: 0, y: 3}, "castle", false).blendIn(),
+                    this.grid.initEntityAt({x: 1, y: 3}, "knight", true).blendIn(300),
 
-        this.grid.initEntityAt({x: 0, y: 3}, "castle", false).blendIn()
-        this.grid.initEntityAt({x: 1, y: 3}, "knight", true).blendIn(300)
+                    this.grid.initEntityAt({x: 4, y: 3}, "princess", false).blendIn(50),
 
-        this.grid.initEntityAt({x: 4, y: 3}, "princess", false).blendIn(50)
+                    this.grid.initEntityAt({x: 3, y: 2}, "tree", false).blendIn(100),
+                    this.grid.initEntityAt({x: 3, y: 3}, "tree", false).blendIn(150),
+                    this.grid.initEntityAt({x: 3, y: 4}, "tree", false).blendIn(200),
+                    this.grid.initEntityAt({x: 4, y: 2}, "tree", false).blendIn(250),
+                    this.grid.initEntityAt({x: 4, y: 4}, "tree", false).blendIn(300),
+                    this.grid.initEntityAt({x: 5, y: 2}, "tree", false).blendIn(350),
+                    this.grid.initEntityAt({x: 5, y: 4}, "tree", false).blendIn(400),
 
-        this.grid.initEntityAt({x: 3, y: 2}, "tree", false).blendIn(100)
-        this.grid.initEntityAt({x: 3, y: 3}, "tree", false).blendIn(150)
-        this.grid.initEntityAt({x: 3, y: 4}, "tree", false).blendIn(200)
-        this.grid.initEntityAt({x: 4, y: 2}, "tree", false).blendIn(250)
-        this.grid.initEntityAt({x: 4, y: 4}, "tree", false).blendIn(300)
-        this.grid.initEntityAt({x: 5, y: 2}, "tree", false).blendIn(350)
-        this.grid.initEntityAt({x: 5, y: 4}, "tree", false).blendIn(400)
+                    this.grid.initEntityAt({x: 5, y: 3}, "wolf", false, false).blendIn(400),
+                    this.grid.initEntityAt({x: 2, y: 5}, "swordStone", false).blendIn(400)
+                ])
+                return
+        }
 
-        this.grid.initEntityAt({x: 5, y: 5}, "wolf", false).blendIn(400)
-        this.grid.initEntityAt({x: 2, y: 5}, "swordStone", false).blendIn(400)
-    }
-
-    private async setupSecondLevel() {
-        await this.grid.blendInFields()
-
-        this.grid.initEntityAt({x: 0, y: 3}, "castle", false).blendIn()
-        this.grid.initEntityAt({x: 1, y: 3}, "knight", true).blendIn(300)
-
-        this.grid.initEntityAt({x: 6, y: 3}, "princess", false).blendIn(50)
-
-        //this.grid.initEntityAt({x: 5, y: 3}, "wolf", false).blendIn(400)
-        this.grid.initEntityAt({x: 3, y: 1}, "swordStone", false).blendIn(400)
     }
 
     async resolveLevel() {
@@ -156,7 +174,7 @@ export class MainGameScene extends Phaser.Scene {
         await this.winScreen.blendIn()
     }
 
-    removeEntityAt(index: Vector2) {
+    removeEntityAt(index: Vector2D) {
         this.grid.removeEntityAt(index)
     }
 }
