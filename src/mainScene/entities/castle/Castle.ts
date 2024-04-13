@@ -1,17 +1,18 @@
 import {GridEntityDescription, GridEntity} from "../GridEntity";
-import {EntityName} from "../EntityName";
+import {EntityId} from "../EntityId";
 import Image = Phaser.GameObjects.Image;
+import {ScalableImage} from "../../ScalableImage";
 
 export class Castle extends GridEntity {
 
-    castleImage: Image
+    castleImage: ScalableImage
 
     fillEntityContainer() {
-        this.castleImage = this.scene.add.image(0, -5, "entities.castle")
+        this.castleImage = new ScalableImage(this.scene, {x: 0, y: -40}, "entities.castle")
         this.container.add([this.castleImage]);
     }
 
-    getName(): EntityName {
+    getName(): EntityId {
         return "castle";
     }
 

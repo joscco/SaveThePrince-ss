@@ -1,17 +1,18 @@
 import {GridEntityDescription, GridEntity} from "../GridEntity";
-import {EntityName} from "../EntityName";
+import {EntityId} from "../EntityId";
 import Image = Phaser.GameObjects.Image;
+import {ScalableImage} from "../../ScalableImage";
 
 export class Tree extends GridEntity {
 
-    treeImage: Image
+    treeImage: ScalableImage
 
     fillEntityContainer() {
-        this.treeImage = this.scene.add.image(0, -5, "entities.tree")
+        this.treeImage = new ScalableImage(this.scene, {x: 0, y: -20}, "entities.tree")
         this.container.add([this.treeImage]);
     }
 
-    getName(): EntityName {
+    getName(): EntityId {
         return "tree";
     }
 

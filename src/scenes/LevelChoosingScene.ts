@@ -17,13 +17,17 @@ export class LevelChoosingScene extends Phaser.Scene {
     }
 
     create() {
-        let gridCalculator = new GridCalculator(GAME_WIDTH / 2, GAME_HEIGHT / 2, 3, 7, 125, 125)
+        let gridCalculator = new GridCalculator(GAME_WIDTH / 2, GAME_HEIGHT / 2, 3, 7, {x: 150, y: 0}, {x: 0, y: 150})
         for (let row = 0; row < 7; row++) {
             for (let column = 0; column < 3; column++) {
                 let level = 1 + row * 3 + column
                 if (level <= NUMBER_OF_LEVELS) {
-                    let position = gridCalculator.getPositionForIndex({x: column, y: row})
+                    let index = {x: column, y: row}
+                    let position = gridCalculator.getPositionForIndex(index)
                     let levelButton = new LevelButton(this, position, level)
+                    levelButton.setScale(0)
+                    levelButton.setAlpha(0)
+                    levelButton.setInteractive()
                     levelButton.once('pointerup', async () => {
                         await this.changeToLevel(level, levelButton)
                     })

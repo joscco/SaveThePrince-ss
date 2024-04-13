@@ -1,16 +1,16 @@
 import Image = Phaser.GameObjects.Image;
 import {EntityContainer} from "../EntityContainer";
 import {MainGameScene} from "../../../scenes/MainGameScene";
-import {EntitySprite} from "../../EntitySprite";
+import {ScalableImage} from "../../ScalableImage";
 
 export class SwordStoneContainer extends EntityContainer {
 
-    private stone: EntitySprite
+    private stone: ScalableImage
 
     constructor(scene: MainGameScene, x: number, y: number) {
         super(scene, x, y);
 
-        this.stone = new EntitySprite(scene, {x: 0, y: 0}, 'entities.swordStone.withSword')
+        this.stone = new ScalableImage(scene, {x: 0, y: 0}, 'entities.swordStone.withSword')
 
         this.add([this.stone])
         this.setSword(true);

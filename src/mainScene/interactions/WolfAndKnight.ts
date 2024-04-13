@@ -15,8 +15,6 @@ const WolfAndKnightBase = {
     },
     interact: async (a, b, mainScene) => {
         let [knight, wolf] = sortByNames(a, b, 'knight') as [Knight, Wolf]
-        await knight.turnTowards(wolf.index)
-        await wolf.turnTowards(knight.index)
         if (knight.has('sword')) {
             await wolf.turnAggressive()
             await wait(400)

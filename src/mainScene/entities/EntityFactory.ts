@@ -1,4 +1,4 @@
-import {EntityName} from "./EntityName";
+import {EntityId} from "./EntityId";
 import {Castle} from "./castle/Castle";
 import {Knight} from "./knight/Knight";
 import {GridEntity} from "./GridEntity";
@@ -9,7 +9,7 @@ import {SwordStone} from "./swordStone/SwordStone";
 import {MainGameScene} from "../../scenes/MainGameScene";
 
 export class EntityFactory {
-    public create(scene: MainGameScene, x: number, y: number, entityName: EntityName): GridEntity {
+    public create(scene: MainGameScene, x: number, y: number, entityName: EntityId): GridEntity {
         switch (entityName) {
             case "castle":
                 return new Castle(scene, x, y);

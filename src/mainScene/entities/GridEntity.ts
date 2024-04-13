@@ -1,4 +1,4 @@
-import {EntityName} from "./EntityName";
+import {EntityId} from "./EntityId";
 import {vector2Add, Vector2D, vector2Scalar, vector2Sub} from "../../general/MathUtils";
 import {MainGameScene} from "../../scenes/MainGameScene";
 import Container = Phaser.GameObjects.Container;
@@ -40,13 +40,9 @@ export abstract class GridEntity extends Container {
         this.depth = y
     }
 
-    async turnTowards(otherIndex: Vector2D) {
-        await this.adaptToMoveDirection(vector2Sub(otherIndex, this.index))
-    }
-
     abstract fillEntityContainer()
 
-    abstract getName(): EntityName
+    abstract getName(): EntityId
 
     abstract getDescriptionName(): GridEntityDescription
 
@@ -59,28 +55,16 @@ export abstract class GridEntity extends Container {
     }
 
     async tweenJumpMoveTo(pos: Vector2D) {
-        let direction = vector2Sub({x: pos.x, y: pos.y}, {x: this.x, y: this.y})
-        let isHorizontalMove = direction.y == 0
-
-        // Adapt direction only if necessary
-        await this.adaptToMoveDirection(direction)
-
         return new Promise<void>((resolve) => this.scene.tweens.add({
             targets: this,
             x: pos.x,
             y: pos.y,
             duration: this.durationPerStep,
-            ease: Phaser.Math.Easing.Sine.InOut,
-            onComplete: () => {
-                this.container.y = 0
-                this.container.x = 0
+            ease: Phaser.Math.Easing.Cubic.InOut,
+            onComplete: async () => {
                 resolve()
             },
-            onUpdate: (tween) => {
-                let value = tween.progress
-                if (isHorizontalMove) {
-                    this.container.y = -Math.min(value, 1 - value) * this.verticalMoveOffset
-                }
+            onUpdate: () => {
                 this.depth = this.y
             }
         }))
@@ -95,7 +79,7 @@ export abstract class GridEntity extends Container {
             x: mean.x,
             y: mean.y,
             duration: this.attackDuration,
-            ease: Phaser.Math.Easing.Quadratic.Out,
+            ease: Phaser.Math.Easing.Cubic.Out,
             yoyo: true,
             onComplete: () => {
                 resolve()
@@ -104,12 +88,8 @@ export abstract class GridEntity extends Container {
         }))
     }
 
-    async adaptToMoveDirection(direction: Vector2D) {
-        // this can be overrideable for flipping etc
-    }
-
     async scaleUp() {
-        await this.scaleTween(1.2)
+        await this.scaleTween(1.1, 150, Phaser.Math.Easing.Back.InOut)
     }
 
     async scaleDown() {
@@ -117,7 +97,7 @@ export abstract class GridEntity extends Container {
     }
 
     async blendIn(delay: number = 0) {
-        await this.scaleTween(1, delay)
+        await this.scaleTween(1, 300, Phaser.Math.Easing.Cubic.Out, delay)
     }
 
     async blendOutThenDestroy() {
@@ -125,7 +105,7 @@ export abstract class GridEntity extends Container {
             targets: this.container,
             scale: 0,
             duration: 200,
-            ease: Phaser.Math.Easing.Back.In,
+            ease: Phaser.Math.Easing.Cubic.In,
             onComplete: () => {
                 this.destroy()
                 resolve()
@@ -141,34 +121,56 @@ export abstract class GridEntity extends Container {
                 {
                     x: -this.shakeOffset,
                     duration: 40,
-                    ease: Phaser.Math.Easing.Quadratic.InOut
+                    ease: Phaser.Math.Easing.Cubic.InOut
                 },
                 {
                     x: this.shakeOffset,
                     duration: 40,
-                    ease: Phaser.Math.Easing.Quadratic.InOut
+                    ease: Phaser.Math.Easing.Cubic.InOut
                 },
                 {
                     x: -this.shakeOffset,
                     duration: 40,
-                    ease: Phaser.Math.Easing.Quadratic.InOut
+                    ease: Phaser.Math.Easing.Cubic.InOut
                 },
                 {
                     x: 0,
                     duration: 40,
-                    ease: Phaser.Math.Easing.Quadratic.InOut
+                    ease: Phaser.Math.Easing.Cubic.InOut
                 }
             ],
         }))
     }
 
-    private async scaleTween(scale: number, delay: number = 0) {
+    private async scaleTween(scale: number, duration: number = 200, ease: (i: number) => number = Phaser.Math.Easing.Cubic.Out, delay: number = 0) {
         return new Promise<void>(resolve => this.scene.tweens.add({
             targets: this.container,
             scale: scale,
             delay: delay,
+            duration: duration,
+            ease: ease,
+            onComplete: () => resolve()
+        }))
+    }
+
+    async pickUp() {
+        return new Promise<void>(resolve => this.scene.tweens.add({
+            targets: this.container,
+            y: - 10 - 20 * Math.random(),
+            angle: -10 + Math.random() * 20,
             duration: 200,
-            ease: Phaser.Math.Easing.Back.Out,
+            ease: Phaser.Math.Easing.Back.InOut,
+            onComplete: () => resolve()
+        }))
+    }
+
+    async letDown() {
+        return new Promise<void>(resolve => this.scene.tweens.add({
+            targets: this.container,
+            y: 0,
+            angle: 0,
+            duration: 200,
+            ease: Phaser.Math.Easing.Back.InOut,
             onComplete: () => resolve()
         }))
     }

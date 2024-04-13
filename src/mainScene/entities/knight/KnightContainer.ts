@@ -1,18 +1,19 @@
 import {EntityContainer} from "../EntityContainer";
 import {MainGameScene} from "../../../scenes/MainGameScene";
-import {EntitySprite} from "../../EntitySprite";
+import {ScalableImage} from "../../ScalableImage";
 import {ItemType, KnightHand} from "./KnightHand";
 import GameObject = Phaser.GameObjects.GameObject;
 
 export class KnightContainer extends EntityContainer {
 
-    private knightHead: EntitySprite
+    private knightHead: ScalableImage
     private knightLeftHand: KnightHand
     private knightRightHand: KnightHand
 
     constructor(scene: MainGameScene, x: number, y: number) {
         super(scene, x, y);
-        this.knightHead = new EntitySprite(scene, {x: 0, y: 0}, 'entities.knight.neutral')
+        this.knightHead = new ScalableImage(scene, {x: 0, y: 0}, 'entities.knight')
+        this.knightHead.setOrigin(0.5, 1)
         this.knightLeftHand = new KnightHand(scene, 0, 0)
         this.knightRightHand = new KnightHand(scene, 0, 0)
 
@@ -28,27 +29,19 @@ export class KnightContainer extends EntityContainer {
     }
 
     async setHappy() {
-        this.knightHead.setTexture('entities.knight.neutral')
+        this.knightHead.setTexture('entities.knight')
     }
 
     async tweenDead() {
-        await this.knightHead.tweenChangeTexture("entities.knight.dead")
+        await this.knightHead.tweenChangeTexture("entities.knight")
     }
 
     async tweenFearful() {
-        await this.knightHead.tweenChangeTexture("entities.knight.fearful")
+        await this.knightHead.tweenChangeTexture("entities.knight")
     }
 
     async flipHeadAndHands(lookingRight: boolean) {
-        await this.knightHead.flip(lookingRight, () => {
-            if (lookingRight) {
-                this.moveBelow<GameObject>(this.knightRightHand, this.knightHead)
-                this.moveAbove<GameObject>(this.knightLeftHand, this.knightHead)
-            } else {
-                this.moveBelow<GameObject>(this.knightLeftHand, this.knightHead)
-                this.moveAbove<GameObject>(this.knightRightHand, this.knightHead)
-            }
-        })
+        await this.knightHead.flip(lookingRight)
     }
 
     async addItem(item: ItemType) {

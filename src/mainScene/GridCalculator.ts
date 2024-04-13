@@ -1,4 +1,6 @@
-import {Vector2D} from "../general/MathUtils";
+import {vector2Add, Vector2D, vector2Scalar, vector2Sub} from "../general/MathUtils";
+import Matrix3 = Phaser.Math.Matrix3;
+import Vector3 = Phaser.Math.Vector3;
 
 export class GridCalculator {
 
@@ -6,53 +8,53 @@ export class GridCalculator {
     private centerY: number;
     private readonly columns: number;
     private readonly rows: number;
-    private readonly fieldWidth: number;
-    private readonly fieldHeight: number;
+    private readonly dirX: Vector2D;
+    private readonly dirY: Vector2D;
 
-    private fieldAreaWidth: number;
-    private fieldAreaHeight: number;
-    private readonly offsetFirstX: number;
-    private readonly offsetFirstY: number;
+    private readonly matrix: Matrix3
+    private readonly inverse: Matrix3
+    private readonly positionFirst: Vector2D
 
 
-    constructor(x: number, y: number, columns: number, rows: number, fieldWidth: number, fieldHeight: number) {
+    constructor(x: number, y: number, columns: number, rows: number, dirX: Vector2D, dirY: Vector2D) {
         this.centerX = x
         this.centerY = y
         this.columns = columns
         this.rows = rows
-        this.fieldWidth = fieldWidth
-        this.fieldHeight = fieldHeight
 
-        this.fieldAreaWidth = columns * fieldWidth
-        this.fieldAreaHeight = rows * fieldHeight
-        this.offsetFirstX = x - (columns - 1) / 2 * fieldWidth
-        this.offsetFirstY = y - (rows - 1) / 2 * fieldHeight
+        this.dirX = dirX
+        this.dirY = dirY
+
+        this.matrix = new Matrix3().fromArray([dirX.x, dirX.y, 0, dirY.x, dirY.y, 0, 0, 0, 1])
+        this.inverse = this.matrix.clone()
+        this.inverse.invert()
+
+        let center = {x: this.centerX, y: this.centerY}
+
+        let indexOffset = new Vector3((columns - 1) / 2, (rows - 1) / 2, 0)
+        let offset = indexOffset.transformMat3(this.matrix)
+
+        this.positionFirst = vector2Sub(center, offset)
     }
 
     public getPositionForIndex(index: Phaser.Types.Math.Vector2Like): Vector2D {
-        return {
-            x: this.offsetFirstX + index.x * this.fieldWidth,
-            y: this.offsetFirstY + index.y * this.fieldHeight
-        }
+        let indexAsVec3 = new Vector3(index.x, index.y)
+        return vector2Add(this.positionFirst, indexAsVec3.transformMat3(this.matrix))
     }
 
     public getClosestIndexForPosition(position: Vector2D): Vector2D | undefined {
-        let indexX = this.getClosestIndex1D(this.offsetFirstX, this.fieldWidth, this.columns, position.x)
-        let indexY = this.getClosestIndex1D(this.offsetFirstY, this.fieldHeight, this.rows, position.y)
+        let positionAsVector3 = new Vector3(position.x - this.positionFirst.x, position.y - this.positionFirst.y, 0)
+        let index = positionAsVector3.transformMat3(this.inverse)
 
         // don't use if (indexX) here since it could be 0
-        if (indexX != undefined && indexY != undefined) {
-            return {x: indexX, y: indexY}
+        if (this.isValueWithin(index.x, -0.5, this.columns - 1/2) && this.isValueWithin(index.y, -0.5, this.rows - 1/2)) {
+            return {x: Math.round(index.x), y: Math.round(index.y)}
         }
 
         return undefined
     }
 
-    private getClosestIndex1D(offset: number, fieldExpansion: number, maxValue: number, value: number): number | undefined {
-        let closestIndex = Math.floor((value - offset + fieldExpansion / 2) / fieldExpansion)
-        if (closestIndex < 0 || closestIndex >= maxValue) {
-            return undefined
-        }
-        return closestIndex
+    private isValueWithin(value: number, minvalue: number, maxValue: number): boolean {
+        return value > minvalue && value < maxValue;
     }
 }

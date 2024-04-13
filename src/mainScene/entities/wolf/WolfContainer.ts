@@ -1,13 +1,13 @@
 import {EntityContainer} from "../EntityContainer";
 import {MainGameScene} from "../../../scenes/MainGameScene";
-import {EntitySprite} from "../../EntitySprite";
+import {ScalableImage} from "../../ScalableImage";
 
 export class WolfContainer extends EntityContainer {
-    private wolfHead: EntitySprite
+    private wolfHead: ScalableImage
 
     constructor(scene: MainGameScene, x: number, y: number) {
         super(scene, x, y);
-        this.wolfHead = new EntitySprite(scene, {x: 0, y: 0}, 'entities.wolf.neutral')
+        this.wolfHead = new ScalableImage(scene, {x: 0, y: 0}, 'entities.wolf.neutral')
 
         this.add([this.wolfHead])
     }

@@ -1,5 +1,5 @@
 import {Vector2D} from "../MathUtils";
-import {EntityName} from "../../mainScene/entities/EntityName";
+import {EntityId} from "../../mainScene/entities/EntityId";
 
 export class Dict<K, V> {
     private map = new Map<string, [K, V]>()
@@ -58,8 +58,8 @@ export class Vector2Dict<V> extends Dict<Vector2D, V> {
     }
 }
 
-export class EntityNamePairDict<V> extends Dict<[EntityName, EntityName], V> {
-    constructor(entries?: Iterable<[[EntityName, EntityName], V]>) {
+export class EntityNamePairDict<V> extends Dict<[EntityId, EntityId], V> {
+    constructor(entries?: Iterable<[[EntityId, EntityId], V]>) {
         super(([v, w]) => {
             let [first, second] = [v, w].sort((a, b) => a.localeCompare(b))
             return first + "_" + second

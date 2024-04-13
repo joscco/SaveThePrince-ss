@@ -1,7 +1,6 @@
 import {GridEntity, GridEntityDescription} from "../GridEntity";
-import {EntityName} from "../EntityName";
+import {EntityId} from "../EntityId";
 import {PrincessContainer} from "./PrincessContainer";
-import {Vector2D} from "../../../general/MathUtils";
 
 export class Princess extends GridEntity {
 
@@ -9,11 +8,11 @@ export class Princess extends GridEntity {
     private princessBodyContainer: PrincessContainer
 
     fillEntityContainer() {
-        this.princessBodyContainer = new PrincessContainer(this.mainScene, 0, 0)
+        this.princessBodyContainer = new PrincessContainer(this.mainScene, 0, 30)
         this.container.add([this.princessBodyContainer])
     }
 
-    getName(): EntityName {
+    getName(): EntityId {
         return "princess";
     }
 
@@ -33,13 +32,4 @@ export class Princess extends GridEntity {
         await this.princessBodyContainer.turnFearful()
     }
 
-    override async adaptToMoveDirection(direction: Vector2D) {
-        if (direction.x == 0) {
-            // No adaption required
-            return
-        }
-
-        let lookingRight = direction.x > 0
-        await this.princessBodyContainer.flip(lookingRight)
-    }
 }

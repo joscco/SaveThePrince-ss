@@ -15,10 +15,9 @@ export class Field extends Image {
     constructor(scene: MainGameScene, index: Vector2D, position: Vector2D) {
         let {x, y} = position
         let indexIsEvent = (index.x + index.y) % 2 == 0
-        super(scene, x, y, indexIsEvent ? 'field_even' : 'field_odd');
+        super(scene, x, y + 15, indexIsEvent ? 'field_even' : 'field_odd');
 
         this.inner = scene.add.image(x, y, 'focus')
-        this.inner.scale = 0.7
         this.inner.alpha = 0
         this.inner.depth = 1
 
@@ -27,29 +26,37 @@ export class Field extends Image {
         scene.add.existing(this)
     }
 
+
+    async blendInInnerBlack(free: boolean, delay: number) {
+        this.inner.setTexture(free ? 'focusFreeGray' : 'focusGray')
+        if (!this.innerShown) {
+            this.innerShown = true
+            await this.tweenAlphaInner(1, delay, delay, Phaser.Math.Easing.Sine.Out)
+        }
+    }
+
     async blendInInner(free: boolean, delay: number = 0) {
         this.inner.setTexture(free ? 'focusFree' : 'focus')
         if (!this.innerShown) {
             this.innerShown = true
-            await this.tweenScaleInner(1, 1, 150, delay, Phaser.Math.Easing.Quadratic.Out)
+            await this.tweenAlphaInner(1, 200, delay, Phaser.Math.Easing.Sine.Out)
         }
     }
 
     async blendOutInner(delay: number = 0) {
         if (this.innerShown) {
             this.innerShown = false
-            await this.tweenScaleInner(0.7, 0, 150, delay, Phaser.Math.Easing.Quadratic.In)
+            await this.tweenAlphaInner(0, 150, delay, Phaser.Math.Easing.Sine.In)
         }
         return
     }
 
-    async tweenScaleInner(scale: number, alpha: number, duration: number, delay: number, ease: (x: number) => number) {
+    async tweenAlphaInner(alpha: number, duration: number, delay: number, ease: (x: number) => number) {
         this.scaleTween?.remove()
         return new Promise<void>(resolve => {
             this.scaleTween = this.scene.tweens.add({
                 targets: this.inner,
                 alpha: alpha,
-                scale: scale,
                 duration: duration,
                 delay: delay,
                 ease: ease,
@@ -64,7 +71,8 @@ export class Field extends Image {
             scale: 1,
             delay: delay,
             duration: duration,
-            ease: Phaser.Math.Easing.Quadratic.InOut
+            ease: Phaser.Math.Easing.Cubic.Out
         })
     }
+
 }

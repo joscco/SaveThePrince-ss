@@ -1,16 +1,16 @@
 import {GridEntity} from "../entities/GridEntity";
 import {Action, AutomaticActions, DemandedActions} from "./Actions";
-import {EntityName} from "../entities/EntityName";
+import {EntityId} from "../entities/EntityId";
 import {Vector2Dict} from "../../general/datatypes/Dict";
-import {MainGameScene} from "../../scenes/MainGameScene";
+import {LevelManager} from "../LevelManager";
 
 export class InteractionManager {
-    async letInteract(firstEntity: GridEntity, secondEntity: GridEntity, mainScene: MainGameScene) {
+    async letInteract(firstEntity: GridEntity, secondEntity: GridEntity, mainScene: LevelManager) {
         let action = this.getMethodForEntities(firstEntity.getName(), secondEntity.getName())
         await action.interact(firstEntity, secondEntity, mainScene)
     }
 
-    private getMethodForEntities(firstEntity: EntityName, secondEntity: EntityName): Action {
+    private getMethodForEntities(firstEntity: EntityId, secondEntity: EntityId): Action {
         return DemandedActions.get([firstEntity, secondEntity])
     }
 

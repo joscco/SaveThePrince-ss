@@ -1,5 +1,5 @@
 import {GridEntityDescription, GridEntity} from "../GridEntity";
-import {EntityName} from "../EntityName";
+import {EntityId} from "../EntityId";
 import {SwordStoneContainer} from "./SwordStoneContainer";
 import Container = Phaser.GameObjects.Container;
 
@@ -14,7 +14,7 @@ export class SwordStone extends GridEntity {
         this.container.add([this.swordStoneContainer])
     }
 
-    getName(): EntityName {
+    getName(): EntityId {
         return "swordStone";
     }
 

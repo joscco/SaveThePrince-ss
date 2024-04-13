@@ -31,16 +31,16 @@ export abstract class EntityContainer extends Container {
         }
     }
 
-    private async tweenScale(scale: number) {
+    private async tweenScale(scale: number, duration: number = 200) {
         let adaptedScale = (this.lookingRight ? 1 : -1) * scale
         return new Promise<void>(resolve => {
             this.scaleTween?.destroy()
             this.scaleTween = this.scene.tweens.add({
                 targets: this,
-                duration: 150,
+                duration: duration,
                 scaleX: adaptedScale,
                 scaleY: scale,
-                ease: Phaser.Math.Easing.Back.Out,
+                ease: Phaser.Math.Easing.Back.InOut,
                 onComplete: () => resolve()
             })
         })

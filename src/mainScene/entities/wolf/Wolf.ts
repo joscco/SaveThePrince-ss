@@ -1,5 +1,5 @@
 import {GridEntityDescription, GridEntity} from "../GridEntity";
-import {EntityName} from "../EntityName";
+import {EntityId} from "../EntityId";
 import {WolfContainer} from "./WolfContainer";
 import Container = Phaser.GameObjects.Container;
 import {Vector2D} from "../../../general/MathUtils";
@@ -8,7 +8,7 @@ export class Wolf extends GridEntity {
 
     private wolfContainer: WolfContainer
 
-    getName(): EntityName {
+    getName(): EntityId {
         return "wolf";
     }
 
@@ -36,13 +36,5 @@ export class Wolf extends GridEntity {
         await this.wolfContainer.tweenNeutral()
     }
 
-    override async adaptToMoveDirection(direction: Vector2D) {
-        if (direction.x == 0) {
-            // No adaption required
-            return
-        }
 
-        let lookingRight = direction.x > 0
-        await this.wolfContainer.flip(lookingRight)
-    }
 }

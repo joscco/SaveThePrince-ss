@@ -1,0 +1,1 @@
+export type EntityId = 'knight' | 'princess' | 'wolf' | 'castle' | 'tree' | 'swordStone'
