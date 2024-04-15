@@ -59,6 +59,11 @@ export class MainGameScene extends Phaser.Scene {
         this.load.image('entities.swordStone.withoutSword', 'assets/images/mainScene/entities/sword_stone_empty.png');
 
         this.load.image('entities.tree', 'assets/images/mainScene/entities/forest.png');
+
+        this.load.audio('move_1', [ 'assets/sounds/move/move-01.ogg' ]);
+        this.load.audio('move_2', [ 'assets/sounds/move/move-02.ogg' ]);
+        this.load.audio('move_3', [ 'assets/sounds/move/move-03.ogg' ]);
+        this.load.audio('move_4', [ 'assets/sounds/move/move-04.ogg' ]);
     }
 
     create() {

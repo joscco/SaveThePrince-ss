@@ -2,6 +2,7 @@ import {EntityId} from "./EntityId";
 import {vector2Add, Vector2D, vector2Scalar, vector2Sub} from "../../general/MathUtils";
 import {MainGameScene} from "../../scenes/MainGameScene";
 import Container = Phaser.GameObjects.Container;
+import BaseSound = Phaser.Sound.BaseSound;
 
 // We want:
 // Multiple Entities bundled together
@@ -23,6 +24,7 @@ export abstract class GridEntity extends Container {
     index: Vector2D
     container: Container
     movable: boolean = true
+    moveSounds: BaseSound[]
 
     private readonly shakeOffset = 5;
     private readonly verticalMoveOffset = 80;
@@ -38,6 +40,13 @@ export abstract class GridEntity extends Container {
         this.add([this.container])
         this.fillEntityContainer()
         this.depth = y
+
+        this.moveSounds = [
+            this.scene.sound.add("move_1"),
+            this.scene.sound.add("move_2"),
+            this.scene.sound.add("move_3"),
+            this.scene.sound.add("move_4")
+        ]
     }
 
     abstract fillEntityContainer()
@@ -55,6 +64,7 @@ export abstract class GridEntity extends Container {
     }
 
     async tweenJumpMoveTo(pos: Vector2D) {
+        this.moveSounds[Math.floor(Math.random() * 4)].play()
         return new Promise<void>((resolve) => this.scene.tweens.add({
             targets: this,
             x: pos.x,

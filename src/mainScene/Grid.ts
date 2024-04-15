@@ -28,7 +28,6 @@ export class Grid {
     private entityFactory: EntityFactory;
     private interactionManager: InteractionManager
 
-
     // This is the only thin really needed
     private gridCalculator?: GridCalculator
     private columns: number
