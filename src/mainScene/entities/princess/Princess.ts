@@ -8,7 +8,7 @@ export class Princess extends GridEntity {
     private princessBodyContainer: PrincessContainer
 
     fillEntityContainer() {
-        this.princessBodyContainer = new PrincessContainer(this.mainScene, 0, 30)
+        this.princessBodyContainer = new PrincessContainer(this.mainScene, 0, 35)
         this.container.add([this.princessBodyContainer])
     }
 

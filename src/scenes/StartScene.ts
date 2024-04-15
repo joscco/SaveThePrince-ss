@@ -22,8 +22,10 @@ export class StartScene extends Phaser.Scene {
     create() {
         this.logo = new ScalableImage(this, {x:GAME_WIDTH / 2, y: GAME_HEIGHT / 2 - 300}, 'startScene_logo')
         this.logo.setScale(0)
+        this.logo.setAlpha(0)
         this.title = new ScalableImage(this, {x: GAME_WIDTH / 2, y: GAME_HEIGHT / 2 + 50}, 'startScene_title')
         this.title.setScale(0)
+        this.title.setAlpha(0)
         this.startButton = new Button(this, {x: GAME_WIDTH / 2, y: GAME_HEIGHT / 2 + 350}, 'startScene_startButton')
         this.startButton.setScale(0)
         this.startButton.setAlpha(0)

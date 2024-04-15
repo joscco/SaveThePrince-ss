@@ -166,8 +166,8 @@ export abstract class GridEntity extends Container {
     async pickUp() {
         return new Promise<void>(resolve => this.scene.tweens.add({
             targets: this.container,
-            y: - 10 - 20 * Math.random(),
-            angle: -10 + Math.random() * 20,
+            y: -20,
+            angle: -5 + Math.random() * 10,
             duration: 200,
             ease: Phaser.Math.Easing.Back.InOut,
             onComplete: () => resolve()

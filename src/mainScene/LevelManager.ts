@@ -65,6 +65,10 @@ export class LevelManager {
         this.scene.input.on('pointerup', async (pointer: Pointer) => {
             await this.handleClick(pointer);
         })
+
+        this.scene.input.on('pointerupoutside', async (pointer: Pointer) => {
+            await this.handleClick(pointer);
+        })
     }
 
     private async handleClick(pointer: Phaser.Input.Pointer) {
@@ -104,44 +108,42 @@ export class LevelManager {
         this.waitingForNextPosition = false
         await this.grid.blendOutFieldAllHints()
         this.entityWaitingForInput.scaleDown()
+        await this.entityWaitingForInput.letDown()
 
-        if (pointerIndex) {
-            if (vector2Equals(pointerIndex, this.entityWaitingForInput.index)) {
-                // Clicked on selected entity, do nothing
-                await this.entityWaitingForInput.letDown()
-                return
-            }
-
-            // If field is free, just move there
-            if (this.grid.isFreeField(pointerIndex)) {
-                let path = this.grid.findPath(this.entityWaitingForInput.index, pointerIndex, true)
-                if (path) {
-                    this.moving = true
-                    await this.grid.blendInPathHints(path)
-
-                    await Promise.all([
-                        this.grid.moveEntityAlongPath(this.entityWaitingForInput, path)
-                    ])
-                    this.moving = false
-                }
-            } else {
-                // If field is taken, interact
-                let path = this.grid.findPath(this.entityWaitingForInput.index, pointerIndex, false)
-                let controlledEntity = this.entityWaitingForInput
-                let otherEntity = this.grid.getEntityAt(pointerIndex)
-                let canInteract = this.grid.checkIfCanInteract(this.entityWaitingForInput, otherEntity)
-                if (path && canInteract) {
-                    this.moving = true
-                    await this.grid.blendInPathHints(path)
-                    await this.grid.moveEntityAndInteractWithField(controlledEntity, otherEntity, path)
-                    this.moving = false
-                } else {
-                    await Promise.all([controlledEntity.shake(), otherEntity.shake()])
-                }
-            }
-
-            await this.entityWaitingForInput.letDown()
-            await this.grid.checkNeighbors()
+        if (!pointerIndex || vector2Equals(pointerIndex, this.entityWaitingForInput.index)) {
+            // Clicked on selected entity, do nothing
+            return
         }
+
+        // If field is free, just move there
+        if (this.grid.isFreeField(pointerIndex)) {
+            let path = this.grid.findPath(this.entityWaitingForInput.index, pointerIndex, true)
+            if (path) {
+                this.moving = true
+                await this.grid.blendInPathHints(path)
+
+                await Promise.all([
+                    this.grid.moveEntityAlongPath(this.entityWaitingForInput, path)
+                ])
+                this.moving = false
+            }
+
+        } else {
+            // If field is taken, interact
+            let path = this.grid.findPath(this.entityWaitingForInput.index, pointerIndex, false)
+            let controlledEntity = this.entityWaitingForInput
+            let otherEntity = this.grid.getEntityAt(pointerIndex)
+            let canInteract = this.grid.checkIfCanInteract(this.entityWaitingForInput, otherEntity)
+            if (path && canInteract) {
+                this.moving = true
+                await this.grid.blendInPathHints(path)
+                await this.grid.moveEntityAndInteractWithField(controlledEntity, otherEntity, path)
+                this.moving = false
+            } else {
+                await Promise.all([controlledEntity.shake(), otherEntity.shake()])
+            }
+        }
+
+        await this.grid.checkNeighbors()
     }
 }

@@ -8,7 +8,8 @@ export class Castle extends GridEntity {
     castleImage: ScalableImage
 
     fillEntityContainer() {
-        this.castleImage = new ScalableImage(this.scene, {x: 0, y: -40}, "entities.castle")
+        this.castleImage = new ScalableImage(this.scene, {x: 0, y: 35}, "entities.castle")
+        this.castleImage.setOrigin(0.5, 1)
         this.container.add([this.castleImage]);
     }
 

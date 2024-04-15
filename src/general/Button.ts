@@ -31,15 +31,15 @@ export class Button {
 
     async blendIn(delay: number = 0) {
         await Promise.all([
-            this.tweenScale(1, 200, Phaser.Math.Easing.Expo.Out, delay),
-            this.tweenAlpha(1, 200, Phaser.Math.Easing.Expo.Out, delay)
+            this.tweenScale(1, 200, Phaser.Math.Easing.Quadratic.Out, delay),
+            this.tweenAlpha(1, 200, Phaser.Math.Easing.Quadratic.Out, delay)
         ])
     }
 
     async blendOut(delay: number = 0) {
         await Promise.all([
-            this.tweenScale(0, 200, Phaser.Math.Easing.Expo.In, delay),
-            this.tweenAlpha(0, 200, Phaser.Math.Easing.Expo.In, delay)
+            this.tweenScale(0, 200, Phaser.Math.Easing.Quadratic.In, delay),
+            this.tweenAlpha(0, 200, Phaser.Math.Easing.Quadratic.In, delay)
         ])
     }
 

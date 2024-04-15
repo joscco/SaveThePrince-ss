@@ -2,7 +2,6 @@ import {GridEntity, GridEntityDescription} from "../GridEntity";
 import {EntityId} from "../EntityId";
 import {PrincessContainer} from "../princess/PrincessContainer";
 import {KnightContainer} from "./KnightContainer";
-import {Vector2D} from "../../../general/MathUtils";
 import {ItemType} from "./KnightHand";
 
 export class Knight extends GridEntity {
@@ -14,11 +13,11 @@ export class Knight extends GridEntity {
     private _dead: boolean = false
 
     fillEntityContainer() {
-        this.princessContainer = new PrincessContainer(this.mainScene, 0, 30)
+        this.princessContainer = new PrincessContainer(this.mainScene, 0, 35)
         this.princessContainer.scale = 0
         this.princessContainer.setHappy()
 
-        this.knightContainer = new KnightContainer(this.mainScene, 0, 30)
+        this.knightContainer = new KnightContainer(this.mainScene, 0, 35)
 
         this.container.add([this.knightContainer, this.princessContainer])
     }
