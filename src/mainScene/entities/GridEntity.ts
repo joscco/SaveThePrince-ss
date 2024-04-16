@@ -4,15 +4,6 @@ import {MainGameScene} from "../../scenes/MainGameScene";
 import Container = Phaser.GameObjects.Container;
 import BaseSound = Phaser.Sound.BaseSound;
 
-// We want:
-// Multiple Entities bundled together
-// Make these bundled entities half size
-// Flip those bundled entities
-// Make this bundled entities have items which change depth when flipped
-// Make entities blendIndable
-
-// GridEntity ->
-
 export class GridEntityDescription {
     name: string
     isPlural: boolean

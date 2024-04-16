@@ -38,7 +38,7 @@ export class Button {
 
     async blendOut(delay: number = 0) {
         await Promise.all([
-            this.tweenScale(0, 200, Phaser.Math.Easing.Quadratic.In, delay),
+            this.tweenScale(0.75, 200, Phaser.Math.Easing.Quadratic.In, delay),
             this.tweenAlpha(0, 200, Phaser.Math.Easing.Quadratic.In, delay)
         ])
     }
