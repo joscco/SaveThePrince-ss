@@ -1,5 +1,5 @@
 import {EntityId} from "./EntityId";
-import {vector2Add, Vector2D, vector2Scalar, vector2Sub} from "../../general/MathUtils";
+import {vector2Add, Vector2D, vector2Scalar} from "../../general/MathUtils";
 import {MainGameScene} from "../../scenes/MainGameScene";
 import Container = Phaser.GameObjects.Container;
 import BaseSound = Phaser.Sound.BaseSound;
@@ -27,7 +27,6 @@ export abstract class GridEntity extends Container {
     moveSounds: BaseSound[]
 
     private readonly shakeOffset = 5;
-    private readonly verticalMoveOffset = 80;
     private readonly durationPerStep = 200;
     private readonly attackDuration = 150;
 
