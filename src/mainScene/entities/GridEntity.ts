@@ -35,7 +35,8 @@ export abstract class GridEntity extends Container {
         this.mainScene = scene
         scene.add.existing(this)
         this.container = scene.add.container()
-        this.container.scale = 0
+        this.container.y = -50
+        this.container.alpha = 0
         this.add([this.container])
         this.fillEntityContainer()
         this.depth = y
@@ -105,20 +106,18 @@ export abstract class GridEntity extends Container {
     }
 
     async blendIn(delay: number = 0) {
-        await this.scaleTween(1, 300, Phaser.Math.Easing.Cubic.Out, delay)
+        await Promise.all([
+            this.moveYTween(0, 400, Phaser.Math.Easing.Cubic.Out, delay),
+            this.alphaTween(1, 300, Phaser.Math.Easing.Cubic.Out, delay)
+        ])
     }
 
     async blendOutThenDestroy() {
-        return new Promise<void>(resolve => this.scene.tweens.add({
-            targets: this.container,
-            scale: 0,
-            duration: 200,
-            ease: Phaser.Math.Easing.Cubic.In,
-            onComplete: () => {
-                this.destroy()
-                resolve()
-            }
-        }))
+        await Promise.all([
+            this.moveYTween(-50, 400, Phaser.Math.Easing.Cubic.Out),
+            this.alphaTween(0, 300, Phaser.Math.Easing.Cubic.Out)
+        ])
+        this.destroy()
     }
 
     async shake(): Promise<void> {
@@ -156,6 +155,28 @@ export abstract class GridEntity extends Container {
         return new Promise<void>(resolve => this.scene.tweens.add({
             targets: this.container,
             scale: scale,
+            delay: delay,
+            duration: duration,
+            ease: ease,
+            onComplete: () => resolve()
+        }))
+    }
+
+    private async alphaTween(alpha: number, duration: number = 200, ease: (i: number) => number = Phaser.Math.Easing.Cubic.Out, delay: number = 0) {
+        return new Promise<void>(resolve => this.scene.tweens.add({
+            targets: this.container,
+            alpha: alpha,
+            delay: delay,
+            duration: duration,
+            ease: ease,
+            onComplete: () => resolve()
+        }))
+    }
+
+    private async moveYTween(y: number, duration: number = 200, ease: (i: number) => number = Phaser.Math.Easing.Cubic.Out, delay: number = 0) {
+        return new Promise<void>(resolve => this.scene.tweens.add({
+            targets: this.container,
+            y: y,
             delay: delay,
             duration: duration,
             ease: ease,
