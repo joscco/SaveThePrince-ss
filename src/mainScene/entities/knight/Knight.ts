@@ -3,6 +3,7 @@ import {EntityId} from "../EntityId";
 import {PrincessContainer} from "../princess/PrincessContainer";
 import {KnightContainer} from "./KnightContainer";
 import {ItemType} from "./KnightHand";
+import {Princess} from "../princess/Princess";
 
 export class Knight extends GridEntity {
 
@@ -13,13 +14,9 @@ export class Knight extends GridEntity {
     private _dead: boolean = false
 
     fillEntityContainer() {
-        this.princessContainer = new PrincessContainer(this.mainScene, 0, 35)
-        this.princessContainer.scale = 0
-        this.princessContainer.setHappy()
-
         this.knightContainer = new KnightContainer(this.mainScene, 0, 35)
 
-        this.container.add([this.knightContainer, this.princessContainer])
+        this.container.add([this.knightContainer])
     }
 
     getName(): EntityId {
@@ -75,9 +72,12 @@ export class Knight extends GridEntity {
         await this.knightContainer.addItem(item)
     }
 
-    public async showPrincess() {
+    public async showPrincess(princess: Princess) {
         await this.knightContainer.tweenMove({x: -20, y: 15})
-        this.princessContainer.setPosition(20, 45)
+        await princess.tweenJumpMoveTo({x: this.x, y: this.y})
+        this.princessContainer = princess.getContainer()
+        this.container.add(this.princessContainer)
+        await this.princessContainer.tweenMove({x: 20, y: 45})
         await Promise.all([
             this.knightContainer.scaleHalfSize(),
             this.princessContainer.scaleHalfSize()

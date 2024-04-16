@@ -31,6 +31,7 @@ export class LevelManager {
     waitingForNextPosition: boolean = false
     entityWaitingForInput: GridEntity = undefined
     private levelConfig: LevelConfig;
+    private selectingEntity: boolean;
 
     constructor(scene: MainGameScene, levelConfig: LevelConfig) {
         this.scene = scene
@@ -83,7 +84,7 @@ export class LevelManager {
     }
 
     private async trySelectingEntityOnIndex(pointerIndex: Vector2D) {
-        if (pointerIndex && !this.grid.isFreeField(pointerIndex)) {
+        if (!this.selectingEntity && pointerIndex && !this.grid.isFreeField(pointerIndex)) {
             // Fetch entity on index
             let entity = this.grid.getEntityAt(pointerIndex)
 
@@ -94,12 +95,14 @@ export class LevelManager {
             }
 
             // Entity is movable, so select it and show possible next fields
+            this.selectingEntity = true
             this.entityWaitingForInput = entity
             await Promise.all([
                 this.entityWaitingForInput.pickUp(),
                 this.entityWaitingForInput.scaleUp()
             ])
             await this.grid.blendInFieldHints(entity.index)
+            this.selectingEntity = false
             this.waitingForNextPosition = true
         }
     }

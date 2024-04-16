@@ -82,7 +82,6 @@ export abstract class GridEntity extends Container {
     async attack(pos: Vector2D) {
         let ownPosition = {x: this.x, y: this.y}
         let mean = vector2Scalar(0.5, vector2Add(ownPosition, pos))
-        this.depth = pos.y + 20
         return new Promise<void>((resolve) => this.scene.tweens.add({
             targets: this,
             x: mean.x,
@@ -92,7 +91,7 @@ export abstract class GridEntity extends Container {
             yoyo: true,
             onComplete: () => {
                 resolve()
-                this.depth = ownPosition.y
+                this.depth = this.y
             }
         }))
     }
@@ -123,6 +122,8 @@ export abstract class GridEntity extends Container {
     }
 
     async shake(): Promise<void> {
+        let sound = this.scene.sound.add("move_1")
+        sound.play()
         return new Promise<void>(resolve => this.scene.tweens.chain({
             targets: this.container,
             onComplete: () => resolve(),

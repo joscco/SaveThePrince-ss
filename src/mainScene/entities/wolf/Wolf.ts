@@ -20,7 +20,7 @@ export class Wolf extends GridEntity {
     }
 
     fillEntityContainer() {
-        this.wolfContainer = new WolfContainer(this.mainScene, 0, 0)
+        this.wolfContainer = new WolfContainer(this.mainScene, 0, 35)
         this.container.add(this.wolfContainer)
     }
 

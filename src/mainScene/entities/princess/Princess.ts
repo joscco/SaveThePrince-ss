@@ -32,4 +32,8 @@ export class Princess extends GridEntity {
         await this.princessBodyContainer.turnFearful()
     }
 
+    getContainer() {
+        return this.princessBodyContainer
+    }
+
 }

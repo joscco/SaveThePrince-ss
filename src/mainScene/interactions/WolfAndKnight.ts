@@ -16,18 +16,13 @@ const WolfAndKnightBase = {
     interact: async (a, b, mainScene) => {
         let [knight, wolf] = sortByNames(a, b, 'knight') as [Knight, Wolf]
         if (knight.has('sword')) {
-            await wolf.turnAggressive()
-            await wait(400)
             await knight.attack({x: wolf.x, y: wolf.y})
-            await Promise.all([wolf.shake(), wolf.turnDead()])
+            await wolf.shake()
             mainScene.removeEntityAt(wolf.index)
             await wolf.blendOutThenDestroy()
         } else {
-            await wolf.turnAggressive()
-            await knight.turnFearful()
-            await wait(400)
             await wolf.attack({x: knight.x, y: knight.y})
-            await Promise.all([knight.shake(), knight.turnDead(), wolf.turnNeutral()])
+            await knight.shake()
             mainScene.removeEntityAt(knight.index)
             await knight.blendOutThenDestroy()
         }

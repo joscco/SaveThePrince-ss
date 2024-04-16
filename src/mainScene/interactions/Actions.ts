@@ -25,9 +25,9 @@ export const DemandedActions = new EntityNamePairDict<Action>([
             interact: async (a, b, mainScene) => {
                 let [knight, princess] = sortByNames(a, b, 'knight') as [Knight, Princess]
                 mainScene.removeEntityAt(princess.index)
-                await Promise.all([princess.blendOutThenDestroy(), knight.attack({x: princess.x, y: princess.y})])
+                await knight.showPrincess(princess)
+                princess.destroy()
                 knight.setHasPrincess(true)
-                await knight.showPrincess()
             }
         }
     ],
@@ -71,21 +71,7 @@ export const DemandedActions = new EntityNamePairDict<Action>([
 export const AutomaticActions = new EntityNamePairDict<Action>([
     [
         ['knight', 'wolf'], WolfAndKnightActionAutomatic
-    ],
-    [
-        ['princess', 'wolf'],
-        {
-            getDescription: () => "The wolf frightens the princess.",
-            canInteract: (a, b) => {
-                let [_, princess] = sortByNames(a, b, 'wolf') as [Wolf, Princess]
-                return !princess.isFrightened()
-            },
-            interact: async (a, b) => {
-                let [wolf, princess] = sortByNames(a, b, 'wolf') as [Wolf, Princess]
-                await Promise.all([wolf.turnAggressive(), princess.turnFearful()])
-            }
-        }
-    ],
+    ]
 ])
 
 export function sortByNames(a: GridEntity, b: GridEntity, first: EntityId) {

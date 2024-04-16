@@ -8,7 +8,8 @@ export class Tree extends GridEntity {
     treeImage: ScalableImage
 
     fillEntityContainer() {
-        this.treeImage = new ScalableImage(this.scene, {x: 0, y: -20}, "entities.tree")
+        this.treeImage = new ScalableImage(this.scene, {x: 0, y: 35}, "entities.tree")
+        this.treeImage.setOrigin(0.5, 1)
         this.container.add([this.treeImage]);
     }
 
