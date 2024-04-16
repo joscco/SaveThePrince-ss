@@ -15,6 +15,9 @@ const config: GameConfig = {
     transparent: true,
     parent: 'game',
     roundPixels: false,
+    audio: {
+        disableWebAudio: true
+    },
     scale: {
         mode: Phaser.Scale.FIT,
         width: GAME_WIDTH,

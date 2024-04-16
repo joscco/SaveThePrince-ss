@@ -60,10 +60,10 @@ export class MainGameScene extends Phaser.Scene {
 
         this.load.image('entities.tree', 'assets/images/mainScene/entities/forest.png');
 
-        this.load.audio('move_1', [ 'assets/sounds/move/move-01.mp3' ]);
-        this.load.audio('move_2', [  'assets/sounds/move/move-02.mp3' ]);
-        this.load.audio('move_3', [  'assets/sounds/move/move-03.mp3' ]);
-        this.load.audio('move_4', [  'assets/sounds/move/move-04.mp3' ]);
+        this.load.audio('move_1', ['assets/sounds/move/move-01.mp3']);
+        this.load.audio('move_2', ['assets/sounds/move/move-02.mp3']);
+        this.load.audio('move_3', ['assets/sounds/move/move-03.mp3']);
+        this.load.audio('move_4', ['assets/sounds/move/move-04.mp3']);
     }
 
     create() {
