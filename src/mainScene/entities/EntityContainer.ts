@@ -46,14 +46,5 @@ export abstract class EntityContainer extends Container {
         })
     }
 
-    async tweenMove(pos: Vector2D) {
-        return new Promise<void>(resolve => this.scene.tweens.add({
-            targets: this,
-            duration: 300,
-            x: pos.x,
-            y: pos.y,
-            ease: Phaser.Math.Easing.Quadratic.InOut,
-            onComplete: () => resolve()
-        }))
-    }
+
 }

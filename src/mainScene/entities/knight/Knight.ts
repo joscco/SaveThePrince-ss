@@ -4,6 +4,8 @@ import {PrincessContainer} from "../princess/PrincessContainer";
 import {KnightContainer} from "./KnightContainer";
 import {ItemType} from "./KnightHand";
 import {Princess} from "../princess/Princess";
+import {Vector} from "matter";
+import {vector2Add, Vector2D, vector2Sub} from "../../../general/MathUtils";
 
 export class Knight extends GridEntity {
 
@@ -73,28 +75,27 @@ export class Knight extends GridEntity {
     }
 
     public async showPrincess(princess: Princess) {
-        await this.knightContainer.tweenMove({x: -20, y: 15})
+        let basePosition: Vector2D = {x: 0, y: 35}
+        let relativePrincessIndex = vector2Sub(princess.index, this.index)
+        let princessPosition = vector2Add(basePosition, {
+            x: (relativePrincessIndex.x > 0 ? 1 : -1) * 10,
+            y: (relativePrincessIndex.y > 0 ? 1 : -1) * 15
+        })
+        let knightPosition = vector2Add(basePosition, {
+            x: (relativePrincessIndex.x > 0 ? -1 : 1) * 10,
+            y: (relativePrincessIndex.y > 0 ? -1 : 1) * 15
+        })
+        await this.tweenMoveContainer(this.knightContainer, knightPosition)
         await princess.tweenJumpMoveTo({x: this.x, y: this.y})
         this.princessContainer = princess.getContainer()
-        this.container.add(this.princessContainer)
-        await this.princessContainer.tweenMove({x: 20, y: 45})
-        await Promise.all([
-            this.knightContainer.scaleHalfSize(),
-            this.princessContainer.scaleHalfSize()
-        ])
-    }
-
-    async turnDead() {
-        this._dead = true
-        this.movable = false
-
-        await this.knightContainer.tweenDead()
-    }
-
-    async turnFearful() {
-        if (this.hasPrincess()) {
-            this.princessContainer.turnFearful()
+        if (princessPosition.y > knightPosition.y) {
+            this.container.addAt(this.princessContainer, 1)
+        } else {
+            this.container.addAt(this.princessContainer, 0)
         }
-        await this.knightContainer.tweenFearful()
+
+        await princess.tweenMoveContainer(this.princessContainer, princessPosition)
     }
+
+
 }

@@ -30,7 +30,7 @@ export abstract class GridEntity extends Container {
         this.container.alpha = 0
         this.add([this.container])
         this.fillEntityContainer()
-        this.depth = y
+        this.depth = y + this.container.y
 
         this.moveSounds = [
             this.scene.sound.add("move_1"),
@@ -66,7 +66,21 @@ export abstract class GridEntity extends Container {
                 resolve()
             },
             onUpdate: () => {
-                this.depth = this.y
+                this.depth = this.y + this.container.y
+            }
+        }))
+    }
+
+    async tweenMoveContainer(container: Container, pos: Vector2D) {
+        return new Promise<void>(resolve => this.scene.tweens.add({
+            targets: container,
+            duration: 300,
+            x: pos.x,
+            y: pos.y,
+            ease: Phaser.Math.Easing.Quadratic.InOut,
+            onComplete: () => resolve(),
+            onUpdate: () => {
+                container.depth = container.y
             }
         }))
     }
@@ -83,7 +97,7 @@ export abstract class GridEntity extends Container {
             yoyo: true,
             onComplete: () => {
                 resolve()
-                this.depth = this.y
+                this.depth = this.y + this.container.y
             }
         }))
     }
